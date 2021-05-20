@@ -1,10 +1,175 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:fillViewport="true">
+
+
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/light_blue"
     tools:context=".ui.WelcomeFragment">
 
+    <ImageView
+        android:id="@+id/image_header"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/welcome2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/welcome_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/welcome_text"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+        android:textColor="@color/dark_blue"
+        android:textSize="28sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/image_header" />
+
+    <TextView
+        android:id="@+id/mobile_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:text="@string/mobile_number"
+        android:textColor="@color/dark_blue"
+        android:textSize="17sp"
+        app:layout_constraintBottom_toTopOf="@id/mobile_number_et"
+        app:layout_constraintStart_toStartOf="@id/mobile_number_et" />
+
+    <ImageView
+        android:id="@+id/phone_icon"
+        android:layout_width="26dp"
+        android:layout_height="38dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginStart="16dp"
+        android:src="@drawable/call"
+        app:layout_constraintBottom_toBottomOf="@id/mobile_number_et"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/mobile_tv"
+        app:layout_constraintVertical_bias="0.478" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/mobile_number_et"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        android:layout_marginTop="48dp"
+        android:focusable="true"
+        android:hint="@string/mobile_number_hint"
+        android:inputType="phone"
+        android:minHeight="48dp"
+        android:textColorHint="#616161"
+        app:layout_constraintStart_toEndOf="@id/phone_icon"
+        app:layout_constraintBottom_toTopOf="@id/password_et"
+        app:layout_constraintTop_toBottomOf="@id/welcome_tv" />
+
+    <TextView
+        android:id="@+id/password_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:paddingStart="30dp"
+        android:paddingEnd="30dp"
+        android:text="@string/password_text"
+        android:textColor="@color/dark_blue"
+        android:textSize="17sp"
+        app:layout_constraintBottom_toTopOf="@id/password_et"
+        app:layout_constraintStart_toStartOf="@id/password_et"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <ImageView
+        android:id="@+id/lock_icon"
+        android:layout_width="26dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="10dp"
+        android:src="@drawable/padlock"
+        app:layout_constraintBottom_toBottomOf="@id/password_et"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/password_tv"
+        app:layout_constraintVertical_bias="0.478" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/password_et"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        android:focusable="true"
+        android:hint="*******"
+        android:inputType="textPassword"
+        android:minHeight="48dp"
+        android:textColorHint="#616161"
+        app:layout_constraintStart_toEndOf="@id/lock_icon"
+        app:layout_constraintTop_toBottomOf="@id/mobile_number_et" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/login_btn"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="@string/login_btn_text"
+        android:textSize="20sp"
+        android:padding="10dp"
+        android:textAllCaps="false"
+        android:layout_marginEnd="30dp"
+        android:layout_marginStart="30dp"
+        app:cornerRadius="12dp"
+        android:layout_marginTop="25dp"
+        android:backgroundTint="@color/dark_blue"
+        app:layout_constraintTop_toBottomOf="@id/password_et" />
+
+    <TextView
+        android:id="@+id/forgot_password_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="@string/forgot_password"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+        android:textColor="#414141"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@id/login_btn"
+        app:layout_constraintTop_toBottomOf="@id/login_btn" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/signup_btn"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:backgroundTint="@color/white"
+        android:padding="10dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginTop="30dp"
+        android:text="@string/signup_btn_text"
+        android:textAllCaps="false"
+        android:textColor="@color/dark_blue"
+        android:textSize="20sp"
+        app:cornerRadius="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_btn"
+        app:strokeColor="@color/dark_blue"
+        tools:layout_editor_absoluteX="30dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>
