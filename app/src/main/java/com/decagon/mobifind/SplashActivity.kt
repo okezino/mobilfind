@@ -8,7 +8,6 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
 import com.decagon.mobifind.databinding.ActivitySplashBinding
-import com.decagon.mobifind.databinding.SplashScreenBinding
 
 class SplashActivity : AppCompatActivity() {
 
