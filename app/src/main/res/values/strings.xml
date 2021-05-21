@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Mobifind</string>
+    <string name="welcome_text">Welcome</string>
+    <string name="mobile_number">Mobile Number</string>
+    <string name="mobile_number_hint">+2348057084902</string>
+    <string name="password_text">Password</string>
+    <string name="login_btn_text">Log in</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="signup_btn_text">Sign up</string>
 </resources>
