@@ -9,6 +9,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.ActivityFirebaseAuthBinding
+import com.firebase.ui.auth.AuthUI
 
 class FirebaseAuthActivity : AppCompatActivity() {
 
