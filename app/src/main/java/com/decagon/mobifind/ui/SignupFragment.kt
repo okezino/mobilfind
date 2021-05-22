@@ -50,13 +50,6 @@ class SignupFragment : Fragment() {
     private var user : FirebaseUser? = null
 
 
-    override fun onStart() {
-        super.onStart()
-        if(FirebaseAuth.getInstance().currentUser != null){
-          //  findNavController().navigate(R.id.profileFragment)
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -80,20 +73,7 @@ class SignupFragment : Fragment() {
             listOfCountries)
 
         binding.fragmentSignupGetOTPBtn.setOnClickListener { 
-//            val code = countryCodes[binding.fragmentSignupSpinner.selectedItemPosition]
-//            val number = binding.fragmentSignupPhoneNumberEt.text.toString().trim()
-//
-//            if (number.isEmpty() || number.length < 10) {
-//                binding.fragmentSignupPhoneNumberEt.error = "Valid number is required"
-//                binding.fragmentSignupPhoneNumberEt.requestFocus()
-//                return@setOnClickListener
-//            }
-//
-//            val phoneNumber = "+$code$number"
-//            val action = SignupFragmentDirections.actionSignupFragmentToVerificationFragment(phoneNumber)
-//            findNavController().navigate(action)
-//
-//            Log.d(TAG, "onViewCreated: $phoneNumber")
+
             saveMobifundUser()
 
         }
@@ -243,7 +223,7 @@ class SignupFragment : Fragment() {
 
     private fun saveMobifundUser(){
         if (user == null){
-            logon()
+           // logon()
         }
         user ?: return
         var mobiUser = MobifindUser().apply {
@@ -259,20 +239,7 @@ class SignupFragment : Fragment() {
 
     }
 
-    private fun logon() {
-        val providers = arrayListOf(
-            AuthUI.IdpConfig.EmailBuilder().build(),
-            AuthUI.IdpConfig.PhoneBuilder().build(),
-        )
-        startActivityForResult(
-            AuthUI.getInstance()
-                .createSignInIntentBuilder()
-                .setAvailableProviders(providers)
-                .setLogo(R.drawable.homeland)
-                .setTheme(R.style.AuthenticationTheme)
-                .build(),
-            AUTH_SIGN_IN)
-    }
+
 
     companion object {
         private const val TAG = "SignupFragment"

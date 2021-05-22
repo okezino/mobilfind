@@ -39,22 +39,19 @@ class ProfileFragment : Fragment() {
         viewModel = ViewModelProvider(this).get(ProfileViewModel::class.java)
 
         val currentUser = FirebaseAuth.getInstance().currentUser
-
-        if (currentUser == null) {
-         //   startActivity(Intent(this, FirebaseAuthActivity::class.java))
-            return
+        if (currentUser == null){
+            findNavController().navigate(R.id.welcomeFragment)
         }
 
+        // Signs out a user
         binding.fragmentProfileSignOut.setOnClickListener {
             AuthUI.getInstance().signOut(requireActivity()).addOnCompleteListener {
                 if (it.isSuccessful){
-                    findNavController().navigate(R.id.signupFragment)
+                    findNavController().navigate(R.id.welcomeFragment)
                 }
             }
-         //   AuthUI.getInstance().delete(requireActivity()).addOnCompleteListener {  }
+         // To delete a user account  AuthUI.getInstance().delete(requireActivity()).addOnCompleteListener {  }
 
         }
-
-
     }
 }

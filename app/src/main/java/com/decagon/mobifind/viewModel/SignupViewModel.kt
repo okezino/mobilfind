@@ -17,7 +17,7 @@ class SignupViewModel : ViewModel() {
     private var _mobifindUsers = MutableLiveData<ArrayList<MobifindUser>>()
     val mobifindUser : LiveData<ArrayList<MobifindUser>>
     get() = _mobifindUsers
-    private var storageReference = FirebaseStorage.getInstance().getReference()
+    private var storageReference = FirebaseStorage.getInstance().reference
 
     init {
         firestore.firestoreSettings = FirebaseFirestoreSettings.Builder().build()

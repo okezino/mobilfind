@@ -2,22 +2,16 @@ package com.decagon.mobifind.ui
 
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.navigation.NavArgs
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.VerificationFragmentBinding
 import com.decagon.mobifind.utils.showSnackBar
-import com.decagon.mobifind.utils.showToast
 import com.decagon.mobifind.viewModel.VerificationViewModel
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.*
 import java.util.concurrent.TimeUnit
@@ -52,6 +46,13 @@ class VerificationFragment : Fragment() {
         mAuth = FirebaseAuth.getInstance()
 
         sendVerificationCode(phoneNumber)
+        viewModel.signedInStatus.observe(viewLifecycleOwner,{
+            if (it == "Successful Authentication"){
+                findNavController().navigate(R.id.profileFragment)
+            }
+            binding.fragmentVerificationLayout.showSnackBar(it)
+        })
+
         binding.fragmentVerificationSignInBtn.setOnClickListener {
             val code = binding.fragmentVerificationOTPEt.text.toString().trim()
             if (code.isEmpty() || code.length < 6){
@@ -60,8 +61,7 @@ class VerificationFragment : Fragment() {
                 }.also { it.requestFocus() }
                 return@setOnClickListener
             }
-            verifyCode(code)
-
+           viewModel.verifyCode(code,verificationId)
         }
 
     }
@@ -74,52 +74,25 @@ class VerificationFragment : Fragment() {
             .setActivity(requireActivity())
             .setCallbacks(object : PhoneAuthProvider.OnVerificationStateChangedCallbacks(){
                 override fun onVerificationCompleted(p0: PhoneAuthCredential) {
-                    Log.d("Verification", "onVerificationCompleted: ${p0.smsCode}")
                     val code = p0.smsCode
                     code?.let {
                         binding.fragmentVerificationOTPEt.setText(it)
-                        verifyCode(code)
+                        viewModel.verifyCode(code,verificationId)
                     }
                 }
-
-
                 override fun onVerificationFailed(p0: FirebaseException) {
                     p0.message?.let { binding.fragmentVerificationLayout.showSnackBar(it)
-                        Log.d("Verification", "onVerificationFailed: $it")}
+                       }
                 }
 
                 override fun onCodeSent(p0: String, p1: PhoneAuthProvider.ForceResendingToken) {
                     super.onCodeSent(p0, p1)
                     verificationId = p0
-                    Log.d("Verification", "signInWithCredential: codeSent")
-
                 }
 
 
             }).build()
         PhoneAuthProvider.verifyPhoneNumber(options)
-
-    }
-
-    private fun verifyCode(code: String) {
-        val credential = PhoneAuthProvider.getCredential(verificationId, code)
-        signInWithCredential(credential)
-    }
-
-    private fun signInWithCredential(credential: PhoneAuthCredential){
-        mAuth.signInWithCredential(credential)
-            .addOnCompleteListener {
-                if (it.isSuccessful){
-                   findNavController().navigate(R.id.profileFragment)
-                }else{
-                    it.exception?.message?.let { it1 ->
-                        binding.fragmentVerificationLayout.showSnackBar(
-                            it1
-                        )
-                        Log.d("Verification", "signInWithCredential: $it")
-                    }
-                }
-            }
     }
 
 }
