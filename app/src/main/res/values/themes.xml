@@ -35,4 +35,17 @@
     </style>
     <style name="Theme.Mobifind.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
     <style name="Theme.Mobifind.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="AuthenticationTheme" parent="FirebaseUI">
+    <item name="windowActionBar">false</item>
+<item name="windowNoTitle">true</item>
+<item name="colorPrimary">@color/green_900</item>
+<item name="colorPrimaryDark">@color/green_100</item>
+<item name="colorAccent">@color/purple</item>
+<item name="colorControlNormal">@color/green_900</item>
+<item name="colorControlActivated">@color/green_100</item>
+<item name="colorControlHighlight">@color/purple</item>
+    </style>
+
+
 </resources>
