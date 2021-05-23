@@ -16,10 +16,10 @@
             app:destination="@id/verificationFragment" />
     </fragment>
     <fragment
-        android:id="@+id/signupFragment"
-        android:name="com.decagon.mobifind.ui.SignupFragment"
-        android:label="signup_fragment"
-        tools:layout="@layout/signup_fragment" />
+        android:id="@+id/selectphoto_fragment"
+        android:name="com.decagon.mobifind.ui.SelectPhoto"
+        android:label="selectphoto_fragment"
+        tools:layout="@layout/selectphoto_fragment" />
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.decagon.mobifind.ui.ProfileFragment"

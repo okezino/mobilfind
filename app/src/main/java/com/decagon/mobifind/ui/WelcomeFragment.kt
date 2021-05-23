@@ -1,5 +1,7 @@
 package com.decagon.mobifind.ui
 
+import android.app.Activity.RESULT_OK
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,6 +12,7 @@ import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.FragmentWelcomeBinding
 import com.decagon.mobifind.utils.AUTH_SIGN_IN
 import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -79,6 +82,22 @@ class WelcomeFragment : Fragment() {
         }
         val action = WelcomeFragmentDirections.actionWelcomeFragmentToVerificationFragment(number)
         findNavController().navigate(action)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK){
+            when(requestCode){
+                AUTH_SIGN_IN->{
+                    val response = IdpResponse.fromResultIntent(data)
+                    findNavController().navigate(R.id.selectphoto_fragment)
+                 //   user = FirebaseAuth.getInstance().currentUser
+                    if (response == null){
+                        return
+                    }
+                }
+            }
+        }
     }
 
 

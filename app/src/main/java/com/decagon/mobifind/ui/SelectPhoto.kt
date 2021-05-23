@@ -1,6 +1,7 @@
 package com.decagon.mobifind.ui
 
 import android.app.Activity.RESULT_OK
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,42 +10,37 @@ import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import com.decagon.mobifind.databinding.SignupFragmentBinding
-import com.decagon.mobifind.viewModel.SignupViewModel
+import com.decagon.mobifind.viewModel.SelectPhotoViewModel
 import java.io.IOException
-import android.widget.ArrayAdapter
 import androidx.core.content.FileProvider
+import androidx.navigation.fragment.findNavController
 import com.decagon.mobifind.R
+import com.decagon.mobifind.databinding.SelectphotoFragmentBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
 import com.decagon.mobifind.utils.*
-import com.firebase.ui.auth.AuthUI
-import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
-class SignupFragment : Fragment() {
-    private var _binding : SignupFragmentBinding? = null
+class SelectPhoto : Fragment() {
+    private var _binding : SelectphotoFragmentBinding? = null
     private val binding
     get() = _binding!!
 
-
-    private lateinit var viewModel: SignupViewModel
+    private lateinit var viewModel: SelectPhotoViewModel
     private var imageUri: Uri? = null
     private lateinit var currentPhotoPath : String
 
-    private var photos : ArrayList<Photo> = ArrayList()
+    private var photo : Photo? = null
     private var photoUri : Uri? = null
 
     private var user : FirebaseUser? = null
@@ -54,33 +50,34 @@ class SignupFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = SignupFragmentBinding.inflate(layoutInflater)
+        _binding = SelectphotoFragmentBinding.inflate(layoutInflater)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this).get(SignupViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(SelectPhotoViewModel::class.java)
+        user = FirebaseAuth.getInstance().currentUser
 
-        binding.fragmentSignupSelectImageBtn.setOnClickListener {
-           // changeImageFromGallery()
+        /**
+         * Uses the camera to take a picture and save to a file provider path
+         */
+        binding.fragmentSelectPhotoTakePhotoBtn.setOnClickListener {
             prepTakePhoto()
+           // changeImageFromGallery()
            // prepOpenImageGallery()
           //  saveMobifundUser()
         }
 
-        binding.fragmentSignupSpinner.adapter = ArrayAdapter(requireContext(),android.R.layout.simple_spinner_dropdown_item,
-            listOfCountries)
-
-        binding.fragmentSignupGetOTPBtn.setOnClickListener { 
+        binding.fragmentSelectPhotoLoadDashboardBtn.setOnClickListener {
 
             saveMobifundUser()
 
         }
+        binding.fragmentSelectPhotoChoosePhotoBtn.setOnClickListener {
+            prepOpenImageGallery()
+        }
 
-        viewModel.mobifindUser.observe(viewLifecycleOwner, {
-            Log.d(TAG, "onViewCreated: $it")
-        })
 
 
 
@@ -134,10 +131,7 @@ class SignupFragment : Fragment() {
     private fun takePhoto() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also {
             takePictureIntent -> takePictureIntent.resolveActivity(requireContext().packageManager)
-            if (takePictureIntent == null){
-                binding.signupFragmentLayout.showToast("Unable to save photo")
-            }
-           val photoFile = createImageFile()
+            val photoFile = createImageFile()
             photoFile.also {
                photoUri = FileProvider.getUriForFile(requireContext(),"com.decagon.mobifind.android.fileprovider",it)
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,photoUri)
@@ -147,6 +141,16 @@ class SignupFragment : Fragment() {
 //                startActivityForResult(takePictureIntent,CAMERA_REQUEST_CODE)
 //        }
         }
+    }
+
+    private fun createImageFile() : File {
+        // Generate a unique file name with date
+        val timestamp = SimpleDateFormat("yyyyMMMdd_HHmmss", Locale.ROOT).format(Date())
+        // Get access to the directory where we can write pictures
+        val storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile("Mobifind${timestamp}", ".jpg", storageDir?.apply {
+            currentPhotoPath =  absolutePath
+        })
     }
 
     // Checks for the request code and
@@ -166,7 +170,7 @@ class SignupFragment : Fragment() {
             }
             PICK_IMAGE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    changeImageFromGallery()
+                    prepOpenImageGallery()
                 } else {
                     binding.signupFragmentLayout.showSnackBar("Permission Denied")
                 }
@@ -191,50 +195,43 @@ class SignupFragment : Fragment() {
 //                        val bitmap = ImageDecoder.decodeBitmap(source)
 //                        binding.fragmentSignupUsersIv.setImageBitmap(bitmap)
                         binding.fragmentSignupUsersIv.setImageURI(imageUri)
+                        photo = Photo(localUri = imageUri.toString())
+                        binding.signupFragmentLayout.showToast("Image Saved")
                     } catch (e: IOException) {
                         e.printStackTrace()
                     }
                 }
                 SAVE_IMAGE_REQUEST_CODE -> {
-                    val photo = Photo(localUri = photoUri.toString())
-                    photos.add(photo)
+                    photo = Photo(localUri = photoUri.toString())
+                    binding.fragmentSignupUsersIv.setImageURI(photoUri)
                     binding.signupFragmentLayout.showToast("Image Saved")
-                }
-                AUTH_SIGN_IN->{
-                    val response = IdpResponse.fromResultIntent(data)
-                    user = FirebaseAuth.getInstance().currentUser
-                    if (response == null){
-                        return
-                    }
                 }
             }
         }
     }
 
-    private fun createImageFile() : File {
-        // Generate a unique file name with date
-        val timestamp = SimpleDateFormat("yyyyMMMdd_HHmmss", Locale.ROOT).format(Date())
-        // Get access to the directory where we can write pictures
-        val storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile("Mobifind${timestamp}", ".jpg", storageDir?.apply {
-            currentPhotoPath =  absolutePath
-        })
-    }
+
 
     private fun saveMobifundUser(){
         if (user == null){
-           // logon()
+           findNavController().navigate(R.id.welcomeFragment)
         }
         user ?: return
-        var mobiUser = MobifindUser().apply {
-            latitude = 67.8
-            longitude = 45.6
-            userName = "Adebayo"
-            phoneNumber = "234809876452"
+        val mobiUser = MobifindUser().apply {
+            phoneNumber = user!!.phoneNumber.toString()
         }
-        viewModel.save(mobiUser, photos, user!!)
-        mobiUser = MobifindUser()
-        photos = ArrayList()
+        photo?.let { viewModel.save(mobiUser, it, user!!) }
+
+        viewModel.uploadStatus.observe(viewLifecycleOwner,{
+            if (it.isNotEmpty()){
+                val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return@observe
+                with (sharedPref.edit()) {
+                    putString(REMOTE_URI, it)
+                    apply()
+                }
+                findNavController().navigate(R.id.profileFragment)
+            }
+        })
 
 
     }
