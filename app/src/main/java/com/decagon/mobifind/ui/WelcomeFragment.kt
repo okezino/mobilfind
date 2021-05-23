@@ -21,18 +21,14 @@ class WelcomeFragment : Fragment() {
     private val binding
         get() = _binding!!
 
-    override fun onStart() {
-        super.onStart()
-        // Launches profile fragment if user is signed In already
-        if(FirebaseAuth.getInstance().currentUser != null){
-            findNavController().navigate(R.id.profileFragment)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        if(FirebaseAuth.getInstance().currentUser != null){
+            findNavController().navigate(R.id.profileFragment)
+        }
         _binding = FragmentWelcomeBinding.inflate(layoutInflater)
         return binding.root
     }
@@ -87,19 +83,13 @@ class WelcomeFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK){
+            val response = IdpResponse.fromResultIntent(data) ?: return
             when(requestCode){
                 AUTH_SIGN_IN->{
-                    val response = IdpResponse.fromResultIntent(data)
                     findNavController().navigate(R.id.selectphoto_fragment)
-                 //   user = FirebaseAuth.getInstance().currentUser
-                    if (response == null){
-                        return
-                    }
+
                 }
             }
         }
     }
-
-
-
 }

@@ -24,6 +24,7 @@ import com.decagon.mobifind.databinding.SelectphotoFragmentBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
 import com.decagon.mobifind.utils.*
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import java.io.File
@@ -64,13 +65,11 @@ class SelectPhoto : Fragment() {
          */
         binding.fragmentSelectPhotoTakePhotoBtn.setOnClickListener {
             prepTakePhoto()
-           // changeImageFromGallery()
-           // prepOpenImageGallery()
-          //  saveMobifundUser()
         }
 
         binding.fragmentSelectPhotoLoadDashboardBtn.setOnClickListener {
-
+            binding.selectPhotoFragmentLayout.setBackgroundColor(resources.getColor(R.color.grey))
+            binding.fragmentSelectPhotoProgressBar.visibility = View.VISIBLE
             saveMobifundUser()
 
         }
@@ -78,37 +77,11 @@ class SelectPhoto : Fragment() {
             prepOpenImageGallery()
         }
 
-
-
-
-
-
     }
 
-
-    // Checks if permission is granted and if not permission is requested and image set to the imageView
-    private fun changeImageFromGallery() {
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                android.Manifest.permission.READ_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissions(
-                arrayOf(
-                    android.Manifest.permission.READ_EXTERNAL_STORAGE,
-                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ),
-                PICK_IMAGE
-            )
-        } else {
-            val galleryIntent = Intent(
-                Intent.ACTION_PICK,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            )
-            startActivityForResult(galleryIntent, PICK_IMAGE)
-        }
-    }
-
+    /**
+     * Chooses image from gallery
+     */
     private fun prepOpenImageGallery(){
         Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
             type = "image/*"
@@ -116,6 +89,9 @@ class SelectPhoto : Fragment() {
         }
     }
 
+    /**
+     * Uses camera to take photo
+     */
     private fun prepTakePhoto(){
         if(ContextCompat.checkSelfPermission(
                 requireContext(),
@@ -137,9 +113,6 @@ class SelectPhoto : Fragment() {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,photoUri)
                 startActivityForResult(takePictureIntent,SAVE_IMAGE_REQUEST_CODE)
             }
-//            ?.also {
-//                startActivityForResult(takePictureIntent,CAMERA_REQUEST_CODE)
-//        }
         }
     }
 
@@ -153,7 +126,7 @@ class SelectPhoto : Fragment() {
         })
     }
 
-    // Checks for the request code and
+    // Checks for the request code
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -165,14 +138,14 @@ class SelectPhoto : Fragment() {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     takePhoto()
                 }else{
-                    binding.signupFragmentLayout.showToast("Unable to take photo without permission")
+                    binding.selectPhotoFragmentLayout.showToast("Unable to take photo without permission")
                 }
             }
             PICK_IMAGE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     prepOpenImageGallery()
                 } else {
-                    binding.signupFragmentLayout.showSnackBar("Permission Denied")
+                    binding.selectPhotoFragmentLayout.showSnackBar("Permission Denied")
                 }
             }
         }
@@ -182,21 +155,12 @@ class SelectPhoto : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK){
             when(requestCode){
-                CAMERA_REQUEST_CODE -> {
-                    val imageBitmap = data!!.extras!!.get("data") as Bitmap
-                    binding.fragmentSignupUsersIv.setImageBitmap(imageBitmap)
-                }
                 PICK_IMAGE -> {
                     try {
                         imageUri = data?.data!!
-//                        val source = ImageDecoder.createSource(requireActivity().contentResolver,
-//                            imageUri!!
-//                        )
-//                        val bitmap = ImageDecoder.decodeBitmap(source)
-//                        binding.fragmentSignupUsersIv.setImageBitmap(bitmap)
                         binding.fragmentSignupUsersIv.setImageURI(imageUri)
                         photo = Photo(localUri = imageUri.toString())
-                        binding.signupFragmentLayout.showToast("Image Saved")
+                        binding.selectPhotoFragmentLayout.showToast("Image Saved")
                     } catch (e: IOException) {
                         e.printStackTrace()
                     }
@@ -204,14 +168,16 @@ class SelectPhoto : Fragment() {
                 SAVE_IMAGE_REQUEST_CODE -> {
                     photo = Photo(localUri = photoUri.toString())
                     binding.fragmentSignupUsersIv.setImageURI(photoUri)
-                    binding.signupFragmentLayout.showToast("Image Saved")
+                    binding.selectPhotoFragmentLayout.showToast("Image Saved")
                 }
             }
         }
     }
 
-
-
+    /**
+     * Transfers the logic of saving a user with photo to the cloudFirestore and storage to the
+     * viewModel
+     */
     private fun saveMobifundUser(){
         if (user == null){
            findNavController().navigate(R.id.welcomeFragment)
@@ -229,6 +195,8 @@ class SelectPhoto : Fragment() {
                     putString(REMOTE_URI, it)
                     apply()
                 }
+                binding.fragmentSelectPhotoProgressBar.visibility = View.GONE
+                binding.selectPhotoFragmentLayout.showSnackBar("Authentication and Image Upload Successful")
                 findNavController().navigate(R.id.profileFragment)
             }
         })
@@ -236,11 +204,6 @@ class SelectPhoto : Fragment() {
 
     }
 
-
-
-    companion object {
-        private const val TAG = "SignupFragment"
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()

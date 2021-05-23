@@ -12,16 +12,12 @@ import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.ProfileFragmentBinding
 import com.decagon.mobifind.viewModel.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
-import android.content.Intent
 import android.util.Log
+import androidx.activity.OnBackPressedCallback
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.decagon.mobifind.utils.REMOTE_URI
 import com.firebase.ui.auth.AuthUI
-
-import com.google.firebase.auth.FirebaseUser
-
-
-
 
 class ProfileFragment : Fragment() {
     private var _binding : ProfileFragmentBinding? = null
@@ -29,6 +25,18 @@ class ProfileFragment : Fragment() {
     get() = _binding!!
 
     private lateinit var viewModel: ProfileViewModel
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        activity?.onBackPressedDispatcher?.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    activity?.finish()
+                }
+            }
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,8 +58,14 @@ class ProfileFragment : Fragment() {
         val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
         val defaultValue = ""
         val remoteUri = sharedPref.getString(REMOTE_URI, defaultValue)
+        Log.d("Shared", "onViewCreated: $remoteUri")
         Glide.with(requireContext())
                     .load(remoteUri)
+                    .apply(
+                    RequestOptions()
+                    .placeholder(R.drawable.loading_status_animation)
+                    .error(R.drawable.ic_error_image)
+            )
                     .into(binding.fragmentProfileUserImageIv)
 
 

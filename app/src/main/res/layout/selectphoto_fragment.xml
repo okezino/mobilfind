@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/signupFragmentLayout"
+    android:id="@+id/selectPhotoFragmentLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.SelectPhoto">
@@ -11,7 +11,7 @@
         android:id="@+id/fragment_selectPhoto_takePhoto_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="72dp"
+        android:layout_marginTop="36dp"
         android:backgroundTint="@color/black"
         android:text="Take Picture"
         app:layout_constraintEnd_toEndOf="parent"
@@ -34,28 +34,28 @@
         android:id="@+id/fragment_selectPhoto_loadDashboard_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="265dp"
         android:backgroundTint="@color/black"
         android:text="Go To Dashboard"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fragment_selectPhoto_choosePhoto_btn" />
 
     <ImageView
         android:id="@+id/fragment_signup_users_iv"
         android:layout_width="245dp"
         android:layout_height="246dp"
-        android:src="@drawable/homeland"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_selectPhoto_loadDashboard_btn"
-        android:layout_marginStart="20dp"
-        android:scaleType="centerCrop"/>
+        android:layout_marginStart="16dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/profile_avatar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ProgressBar
         android:id="@+id/fragment_selectPhoto_progressBar"
         style="?android:attr/progressBarStyle"
         android:layout_width="88dp"
         android:layout_height="82dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

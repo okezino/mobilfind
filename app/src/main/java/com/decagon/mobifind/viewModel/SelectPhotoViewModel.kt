@@ -23,7 +23,6 @@ class SelectPhotoViewModel : ViewModel() {
 
     init {
         firestore.firestoreSettings = FirebaseFirestoreSettings.Builder().build()
-      //  listenToSpecimens()
     }
 
 
@@ -33,13 +32,11 @@ class SelectPhotoViewModel : ViewModel() {
         mobiUser.userId = document.id
        document.set(mobiUser)
             .addOnSuccessListener {
-                Log.d("Firebase", "document saved")
                 savePhotos(mobiUser,photo,user)
             }
             .addOnFailureListener{
                 Log.d("Firebase", "save: failed")
             }
-
     }
 
     private fun savePhotos(
@@ -86,7 +83,6 @@ class SelectPhotoViewModel : ViewModel() {
             .document(photo.id).set(photo).addOnSuccessListener {
                 _uploadStatus.value = photo.remoteUri
                 mobiUser.photoUri = photo.remoteUri
-                Log.d("Uploaded", "uploadPhotoDatabase: ${photo.remoteUri}")
             }
     }
 

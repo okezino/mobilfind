@@ -53,8 +53,6 @@ class ProfileViewModel : ViewModel() {
                     }
                 }
                 _mobifindUsers.value = allMobifindUser
-              //  getUserPicture(FirebaseAuth.getInstance().currentUser!!)
-
             }
         }
 
