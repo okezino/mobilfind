@@ -3,10 +3,10 @@ package com.decagon.mobifind.ui
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.FragmentWelcomeBinding
@@ -47,7 +47,10 @@ class WelcomeFragment : Fragment() {
          * An alternative login route
          */
         binding.loginBtn.setOnClickListener {
-            loginInFirebase()
+            //  loginInFirebase()
+            // Temporary navigation to the mapsFragment
+            findNavController().navigate(R.id.mapsFragment)
+
         }
     }
 
