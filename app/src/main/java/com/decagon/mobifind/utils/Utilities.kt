@@ -21,7 +21,7 @@ fun View.showToast(message: String){
 fun ImageView.load(imageUrl: String) {
     Glide.with(this.context)
         .load(imageUrl).apply(RequestOptions()
-            .placeholder(R.drawable.loading_animation)
-            .error(R.drawable.ic_broken_image)
+            .placeholder(R.drawable.loading_status_animation)
+            .error(R.drawable.ic_error_image)
             ).into(this)
 }

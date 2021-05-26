@@ -39,4 +39,9 @@
         android:name="com.decagon.mobifind.ui.DashBoardFragment"
         android:label="fragment_dash_board"
         tools:layout="@layout/fragment_dash_board" />
+    <fragment
+        android:id="@+id/mapsFragment"
+        android:name="com.decagon.mobifind.ui.MapsFragment"
+        android:label="fragment_maps"
+        tools:layout="@layout/fragment_maps" />
 </navigation>
