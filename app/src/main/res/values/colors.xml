@@ -15,5 +15,6 @@
     <color name="backgroundTint">@color/green_900</color>
     <color name="actionTextColor">@color/green_100</color>
     <color name="grey">#CDC8C8</color>
-
+    <color name="status_bar">#5EBF9E</color>
+    <color name="tool_bar">#93DBC2</color>
 </resources>
