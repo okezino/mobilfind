@@ -7,7 +7,7 @@ import com.decagon.mobifind.databinding.DashBoardRecyclerviewItemBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.utils.load
 
-class UserAdapter(private val clickListener: ClickListener) :
+class UserAdapter(private val clickListener: ClickListener? = null) :
     RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
 
     private var users = mutableListOf<MobifindUser>()
@@ -15,6 +15,11 @@ class UserAdapter(private val clickListener: ClickListener) :
     inner class UserViewHolder(val binding: DashBoardRecyclerviewItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(user: MobifindUser) {
+            clickListener?.let { clickListener ->
+                binding.root.setOnClickListener {
+                    clickListener.onClick(user)
+                }
+            }
             binding.fullName.text = user.userName
             binding.phoneNumber.text = user.phoneNumber
             user.photoUri?.let {
@@ -31,7 +36,6 @@ class UserAdapter(private val clickListener: ClickListener) :
 
     override fun onBindViewHolder(holder: UserViewHolder, position: Int) {
         val user = users[position]
-        holder.itemView.setOnClickListener { clickListener.onClick(user) }
         holder.bind(user)
     }
 

@@ -13,10 +13,12 @@
         <entry key="app/src/main/res/layout/activity_firebase_auth.xml" value="0.25052083333333336" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.25052083333333336" />
         <entry key="app/src/main/res/layout/dash_board_recyclerview_item.xml" value="0.25" />
-        <entry key="app/src/main/res/layout/fragment_dash_board.xml" value="0.22" />
+        <entry key="app/src/main/res/layout/fragment_dash_board.xml" value="0.16" />
+        <entry key="app/src/main/res/layout/fragment_maps.xml" value="0.25052083333333336" />
         <entry key="app/src/main/res/layout/fragment_tracker.xml" value="0.29583333333333334" />
         <entry key="app/src/main/res/layout/fragment_tracking.xml" value="0.29583333333333334" />
-        <entry key="app/src/main/res/layout/fragment_welcome.xml" value="0.14" />
+        <entry key="app/src/main/res/layout/fragment_welcome.xml" value="0.22" />
+        <entry key="app/src/main/res/layout/tracker_recycler_view_item.xml" value="0.25052083333333336" />
       </map>
     </option>
   </component>

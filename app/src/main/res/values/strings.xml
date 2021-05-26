@@ -15,12 +15,7 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
-<<<<<<< HEAD
     <string name="empty_tracking_list">You\'re currently tracking no one</string>
     <string name="empty_tracker_list">Nobody is tracking you at the moment</string>
-=======
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="map_image">Profile Image</string>
->>>>>>> d40b51532cb4e27fe764f67907105fbe6800d4ec
 </resources>
