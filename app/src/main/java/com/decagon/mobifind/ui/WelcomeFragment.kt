@@ -49,7 +49,8 @@ class WelcomeFragment : Fragment() {
         binding.loginBtn.setOnClickListener {
             //  loginInFirebase()
             // Temporary navigation to the mapsFragment
-            findNavController().navigate(R.id.mapsFragment)
+          //  findNavController().navigate(R.id.mapsFragment)
+            findNavController().navigate(R.id.dashBoardFragment)
 
         }
     }

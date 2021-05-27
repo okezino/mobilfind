@@ -18,4 +18,10 @@
     <string name="empty_tracking_list">You\'re currently tracking no one</string>
     <string name="empty_tracker_list">Nobody is tracking you at the moment</string>
     <string name="map_image">Profile Image</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="contacts">Contacts</string>
+    <string name="contactName">Alhaji Okezi</string>
+    <string name="status">Status</string>
+    <string name="phone_number">+234 802 232 0123</string>
 </resources>

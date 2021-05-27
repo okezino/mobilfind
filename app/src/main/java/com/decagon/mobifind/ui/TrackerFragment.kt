@@ -6,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
+import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.UserAdapter
 import com.decagon.mobifind.databinding.FragmentTrackerBinding
 import com.decagon.mobifind.utils.initAdapter
@@ -45,6 +47,10 @@ class TrackerFragment : Fragment() {
                 binding.emptyList.visibility = View.GONE
                 binding.recyclerview.visibility = View.VISIBLE
             }
+        }
+
+        binding.fab.setOnClickListener {
+            Navigation.findNavController(view).navigate(R.id.phoneContactFragment)
         }
     }
 
