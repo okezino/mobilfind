@@ -28,8 +28,8 @@ class SelectPhotoViewModel : ViewModel() {
 
 
     fun save(mobiUser: MobifindUser, photo: Photo, user: FirebaseUser) {
-        val document = firestore.collection("mobifindUsers").document()
-        mobiUser.userId = document.id
+        val document = firestore.collection("mobifindUsers").document(mobiUser.phoneNumber)
+       // mobiUser.userId = document.id
        document.set(mobiUser)
             .addOnSuccessListener {
                 savePhotos(mobiUser,photo,user)
@@ -45,7 +45,7 @@ class SelectPhotoViewModel : ViewModel() {
         user1: FirebaseUser
     ) {
       val collection =  firestore.collection("mobifindUsers")
-            .document(mobiUser.userId)
+            .document(mobiUser.phoneNumber)
             .collection("photos")
             collection.add(photo).addOnSuccessListener {
                 photo.id = it.id
@@ -78,7 +78,7 @@ class SelectPhotoViewModel : ViewModel() {
     }
 
     private fun uploadPhotoDatabase(mobiUser: MobifindUser, photo: Photo) {
-        firestore.collection("mobifindUsers").document(mobiUser.userId)
+        firestore.collection("mobifindUsers").document(mobiUser.phoneNumber)
             .collection("photos")
             .document(photo.id).set(photo).addOnSuccessListener {
                 _uploadStatus.value = photo.remoteUri
