@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.decagon.mobifind.R
+import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.adapter.UserAdapter
 import com.google.android.material.snackbar.Snackbar
 
@@ -30,6 +31,12 @@ fun ImageView.load(imageUrl: String) {
 }
 
 fun initAdapter(adapter: UserAdapter, recyclerView: RecyclerView) {
+    val divider = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
+    recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
+    recyclerView.adapter = adapter
+    recyclerView.addItemDecoration(divider)
+}
+fun initPhoneAdapter(adapter: PhoneContactAdapter, recyclerView: RecyclerView) {
     val divider = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
     recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
     recyclerView.adapter = adapter
