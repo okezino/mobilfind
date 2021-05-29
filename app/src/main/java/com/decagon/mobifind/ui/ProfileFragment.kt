@@ -17,6 +17,7 @@ import androidx.activity.OnBackPressedCallback
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.decagon.mobifind.utils.REMOTE_URI
+import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.firebase.ui.auth.AuthUI
 
 class ProfileFragment : Fragment() {
@@ -24,7 +25,7 @@ class ProfileFragment : Fragment() {
     private val binding
     get() = _binding!!
 
-    private lateinit var viewModel: ProfileViewModel
+    private lateinit var viewModel: MobifindViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,12 +49,16 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this).get(ProfileViewModel::class.java)
+        viewModel = ViewModelProvider(requireActivity()).get(MobifindViewModel::class.java)
 
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser == null){
             findNavController().navigate(R.id.welcomeFragment)
         }
+
+        viewModel.userLocation.observe(viewLifecycleOwner,{
+            Log.d("ProfileFragment", "onViewCreated: ${it.latLng.latitude}")
+        })
 
         val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
         val defaultValue = ""
