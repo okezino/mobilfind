@@ -2,13 +2,16 @@ package com.decagon.mobifind.ui
 
 import android.Manifest
 import android.app.Activity.RESULT_OK
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,11 +25,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.FragmentWelcomeBinding
+import com.decagon.mobifind.model.data.MobifindUser
+import com.decagon.mobifind.model.data.Photo
 import com.decagon.mobifind.model.data.UserLocation
-import com.decagon.mobifind.utils.AUTH_SIGN_IN
-import com.decagon.mobifind.utils.GET_LOCATION_UPDATE
-import com.decagon.mobifind.utils.LOCATION_PERMISSION_REQUEST_CODE
-import com.decagon.mobifind.utils.LOCATION_UPDATE_STATE
+import com.decagon.mobifind.utils.*
 import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.IdpResponse
@@ -34,6 +36,8 @@ import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import java.io.IOException
 
 
 class WelcomeFragment : Fragment() {
@@ -46,6 +50,12 @@ class WelcomeFragment : Fragment() {
     private lateinit var locationRequest: LocationRequest
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var mobifindViewModel: MobifindViewModel
+
+    private var imageUri: Uri? = null
+
+    private var photo : Photo? = null
+    private var photoUri : Uri? = null
+    private var user : FirebaseUser? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,6 +92,7 @@ class WelcomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        user = FirebaseAuth.getInstance().currentUser
 
         /**
          * Signs up a new user with their phoneNumber
@@ -107,6 +118,7 @@ class WelcomeFragment : Fragment() {
     }
 
     private fun signInPhoneNumberFirebaseUI() {
+        binding.fragmentWelcomeProgress.visibility = View.VISIBLE
         val providers = arrayListOf(
             AuthUI.IdpConfig.PhoneBuilder().build(),
         )
@@ -133,35 +145,25 @@ class WelcomeFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK){
-            val response = IdpResponse.fromResultIntent(data) ?: return
+         //   val response = IdpResponse.fromResultIntent(data) ?: return
             when(requestCode){
                 AUTH_SIGN_IN->{
-                    val alertDialog: AlertDialog? = activity?.let {
-                        val builder = AlertDialog.Builder(it)
-                        builder.apply {
-                            setMessage("Do you want to upload an image")
-                            setPositiveButton("YES"
-                            ) { _, _ ->
-                                findNavController().navigate(R.id.profileFragment)
-                                // User clicked OK button
-                            }
-                            setNegativeButton("NO"
-                            ) { dialog, id ->
-                                dialog.dismiss()
-                                // User cancelled the dialog
-                            }
-                        }
-
-                        // Create the AlertDialog
-                        builder.create()
-                    }
-
-                  //  findNavController().navigate(R.id.selectphoto_fragment)
-                    alertDialog?.show()
+                    user = FirebaseAuth.getInstance().currentUser
+                   showDialog()
 
                 }
                 LOCATION_UPDATE_STATE->{
                     startLocationUpdates()
+                }
+                PICK_IMAGE->{
+                    try {
+                        imageUri = data?.data!!
+                        photo = Photo(localUri = imageUri.toString())
+                        binding.welcomeTv.showToast("Image Saved")
+                        saveMobifindUser()
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
                 }
             }
         }
@@ -169,13 +171,30 @@ class WelcomeFragment : Fragment() {
 
 
     private fun showDialog(){
+        val alertDialog: AlertDialog? = activity?.let {
+            val builder = AlertDialog.Builder(it)
+            builder.apply {
+                setMessage("Do you want to upload an image")
+                setPositiveButton("YES"
+                ) { _, _ ->
+                    prepOpenImageGallery()
+                    // User clicked OK button
+                }
+                setNegativeButton("NO"
+                ) { dialog, id ->
+                    dialog.dismiss()
+                    // User cancelled the dialog
+                }
+            }
+
+            // Create the AlertDialog
+            builder.create()
+        }
+
+        //  findNavController().navigate(R.id.selectphoto_fragment)
+        alertDialog?.show()
 
     }
-
-    private fun requestPermissionForLocations(){
-
-    }
-
 
     /**
      * Creates an instance of location request,sets interval, fastest interval
@@ -252,19 +271,41 @@ class WelcomeFragment : Fragment() {
         }
     }
 
-    private fun listenForLocationUpdates(){
-        if (ContextCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST_CODE)
-            return
-        }
-        fusedLocationClient.lastLocation.addOnSuccessListener(requireActivity()) { location ->
-            // Got last known location. In some rare situations this can be null.
-            // 3
-            if (location != null) {
-
-            }
+    //=== IMAGE UPLPOAD =====//
+    /**
+     * Chooses image from gallery
+     */
+    private fun prepOpenImageGallery(){
+        Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
+            type = "image/*"
+            startActivityForResult(this, PICK_IMAGE)
         }
     }
+
+    /**
+     * Transfers the logic of saving a user with photo to the cloudFirestore and storage to the
+     * viewModel
+     */
+    private fun saveMobifindUser(){
+        if (user == null){
+            findNavController().navigate(R.id.welcomeFragment)
+        }
+        user ?: return
+        val mobiUser = MobifindUser().apply {
+            phoneNumber = user!!.phoneNumber.toString()
+        }
+        photo?.let { mobifindViewModel.save(mobiUser, it, user!!) }
+
+        mobifindViewModel.uploadStatus.observe(viewLifecycleOwner,{
+            if (it.isNotEmpty()){
+                binding.fragmentWelcomeProgress.visibility = View.GONE
+                binding.fragmentWelcomeProgress.showSnackBar("Authentication and Image Upload Successful")
+                findNavController().navigate(R.id.profileFragment)
+            }
+        })
+
+
+    }
+
 
 }

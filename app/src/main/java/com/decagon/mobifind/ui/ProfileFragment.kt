@@ -14,6 +14,7 @@ import com.decagon.mobifind.viewModel.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 import android.util.Log
 import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.decagon.mobifind.utils.REMOTE_URI
@@ -26,6 +27,7 @@ class ProfileFragment : Fragment() {
     get() = _binding!!
 
     private lateinit var viewModel: MobifindViewModel
+    private val profileViewModel by viewModels<ProfileViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,27 +53,31 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity()).get(MobifindViewModel::class.java)
 
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser == null){
-            findNavController().navigate(R.id.welcomeFragment)
-        }
+//        val currentUser = FirebaseAuth.getInstance().currentUser
+//        if (currentUser == null){
+//            findNavController().navigate(R.id.welcomeFragment)
+//        }
 
         viewModel.userLocation.observe(viewLifecycleOwner,{
             Log.d("ProfileFragment", "onViewCreated: ${it.latLng.latitude}")
         })
 
-        val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
-        val defaultValue = ""
-        val remoteUri = sharedPref.getString(REMOTE_URI, defaultValue)
-        Log.d("Shared", "onViewCreated: $remoteUri")
-        Glide.with(requireContext())
-                    .load(remoteUri)
-                    .apply(
+        profileViewModel.userPhotoUrl.observe(viewLifecycleOwner,{
+            Glide.with(requireContext())
+                .load(it)
+                .apply(
                     RequestOptions()
-                    .placeholder(R.drawable.loading_status_animation)
-                    .error(R.drawable.ic_error_image)
-            )
-                    .into(binding.fragmentProfileUserImageIv)
+                        .placeholder(R.drawable.loading_status_animation)
+                        .error(R.drawable.ic_error_image)
+                )
+                .into(binding.fragmentProfileUserImageIv)
+        })
+
+//        val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
+//        val defaultValue = ""
+//        val remoteUri = sharedPref.getString(REMOTE_URI, defaultValue)
+//        Log.d("Shared", "onViewCreated: $remoteUri")
+//
 
 
         // Signs out a user

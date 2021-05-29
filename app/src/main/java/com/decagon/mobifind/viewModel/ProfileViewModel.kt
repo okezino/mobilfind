@@ -26,7 +26,8 @@ class ProfileViewModel : ViewModel() {
     init {
         user = FirebaseAuth.getInstance().currentUser
         firestore.firestoreSettings = FirebaseFirestoreSettings.Builder().build()
-        listenToSpecimens()
+        getPhotoUri()
+       // listenToSpecimens()
     }
 
     /**
@@ -45,10 +46,10 @@ class ProfileViewModel : ViewModel() {
                 documents.forEach {
                     val mobifindUser = it.toObject(MobifindUser::class.java)
                     if (mobifindUser != null){
-                        mobifindUser.userId = it.id
+                      //  mobifindUser.userId = it.id
                         allMobifindUser.add(mobifindUser)
                         if (mobifindUser.phoneNumber == user?.phoneNumber){
-                            _userPhotoUrl.value = mobifindUser.photoUri
+                            _userPhotoUrl.value = mobifindUser.photoUri!!
                         }
                     }
                 }
@@ -56,6 +57,14 @@ class ProfileViewModel : ViewModel() {
             }
         }
 
+    }
+
+
+    private fun getPhotoUri(){
+        firestore.collection("mobifindUsers").document(user?.phoneNumber!!).collection("details")
+            .document(user?.phoneNumber!!).addSnapshotListener { value, error ->
+                _userPhotoUrl.value = value?.get("photoUri") as String?
+            }
     }
 
 
