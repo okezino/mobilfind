@@ -44,4 +44,9 @@
         android:name="com.decagon.mobifind.ui.MapsFragment"
         android:label="fragment_maps"
         tools:layout="@layout/fragment_maps" />
+    <fragment
+        android:id="@+id/phoneContactFragment"
+        android:name="com.decagon.mobifind.ui.PhoneContactFragment"
+        android:label="fragment_phone_contact"
+        tools:layout="@layout/fragment_phone_contact" />
 </navigation>

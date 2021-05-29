@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.decagon.mobifind.R
+import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.adapter.UserAdapter
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -40,6 +41,9 @@ fun initAdapter(adapter: UserAdapter, recyclerView: RecyclerView) {
     recyclerView.addItemDecoration(divider)
 }
 
-fun MarkerOptions.image(){
-
+fun initPhoneAdapter(adapter: PhoneContactAdapter, recyclerView: RecyclerView) {
+    val divider = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
+    recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
+    recyclerView.adapter = adapter
+    recyclerView.addItemDecoration(divider)
 }

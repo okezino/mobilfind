@@ -14,7 +14,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.InfoWindowAdapter
 import com.decagon.mobifind.utils.LOCATION_PERMISSION_REQUEST_CODE
-import com.decagon.mobifind.utils.image
 import com.decagon.mobifind.viewModel.MapViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
