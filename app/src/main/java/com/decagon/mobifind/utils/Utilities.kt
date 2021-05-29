@@ -15,6 +15,7 @@ import com.decagon.mobifind.adapter.UserAdapter
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.snackbar.Snackbar
+import com.squareup.picasso.Callback
 
 fun View.showSnackBar(message : String){
     Snackbar.make(this,message,Snackbar.LENGTH_SHORT)
