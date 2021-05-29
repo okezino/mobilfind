@@ -20,7 +20,7 @@ class UserAdapter(private val clickListener: ClickListener? = null) :
                     clickListener.onClick(user)
                 }
             }
-            binding.fullName.text = user.userName
+            binding.fullName.text = user.name
             binding.phoneNumber.text = user.phoneNumber
             user.photoUri?.let {
                 binding.profileImage.load(it)

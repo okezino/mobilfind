@@ -16,11 +16,11 @@ class TrackViewModel : ViewModel() {
         val list = mutableListOf<MobifindUser>()
         val user1 = MobifindUser(
             phoneNumber = "+2348057084902",
-            userName = "Godday Okoduwa"
+            name = "Godday Okoduwa"
         )
         val user2 = MobifindUser(
             phoneNumber = "+2349057051318",
-            userName = "Alhaji Okezi"
+            name = "Alhaji Okezi"
         )
         list.add(user1)
         list.add(user2)

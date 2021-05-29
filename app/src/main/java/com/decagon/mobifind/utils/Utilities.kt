@@ -1,5 +1,6 @@
 package com.decagon.mobifind.utils
 
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
@@ -11,6 +12,8 @@ import com.bumptech.glide.request.RequestOptions
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.adapter.UserAdapter
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.snackbar.Snackbar
 
 fun View.showSnackBar(message : String){
@@ -28,6 +31,7 @@ fun ImageView.load(imageUrl: String) {
             .placeholder(R.drawable.loading_status_animation)
             .error(R.drawable.ic_error_image)
             ).into(this)
+    Log.d("InfoAdapt", "load: $imageUrl")
 }
 
 fun initAdapter(adapter: UserAdapter, recyclerView: RecyclerView) {
@@ -36,6 +40,7 @@ fun initAdapter(adapter: UserAdapter, recyclerView: RecyclerView) {
     recyclerView.adapter = adapter
     recyclerView.addItemDecoration(divider)
 }
+
 fun initPhoneAdapter(adapter: PhoneContactAdapter, recyclerView: RecyclerView) {
     val divider = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
     recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)

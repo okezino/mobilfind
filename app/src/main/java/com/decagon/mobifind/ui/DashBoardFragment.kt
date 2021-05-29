@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.ViewPagerAdapter
@@ -19,6 +20,7 @@ import com.decagon.mobifind.databinding.FragmentDashBoardBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
 import com.decagon.mobifind.utils.*
+import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.decagon.mobifind.viewModel.SelectPhotoViewModel
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.tabs.TabLayoutMediator
@@ -35,6 +37,7 @@ class DashBoardFragment : Fragment() {
     private var currentUser: FirebaseUser? = null
     private lateinit var sharedPref: SharedPreferences
     private val viewModel by viewModels<SelectPhotoViewModel>()
+    private lateinit var mobifindViewModel: MobifindViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,6 +49,8 @@ class DashBoardFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        mobifindViewModel = ViewModelProvider(requireActivity()).get(MobifindViewModel::class.java)
 
         currentUser = FirebaseAuth.getInstance().currentUser
 
@@ -110,9 +115,9 @@ class DashBoardFragment : Fragment() {
         val mobiUser = MobifindUser().apply {
             phoneNumber = currentUser!!.phoneNumber.toString()
         }
-        photo?.let { viewModel.save(mobiUser, it, currentUser!!) }
+        photo?.let { mobifindViewModel.save(mobiUser, it, currentUser!!) }
 
-        viewModel.uploadStatus.observe(viewLifecycleOwner) {
+        mobifindViewModel.uploadStatus.observe(viewLifecycleOwner) {
             if (it.isNotEmpty()) {
                 with(sharedPref.edit()) {
                     putString(REMOTE_URI, it)
