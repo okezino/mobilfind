@@ -1,6 +1,5 @@
 package com.decagon.mobifind.ui
 
-import android.content.Context
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -15,9 +14,8 @@ import com.google.firebase.auth.FirebaseAuth
 import android.util.Log
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.viewModels
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import com.decagon.mobifind.utils.REMOTE_URI
+import com.decagon.mobifind.model.data.Track
+import com.decagon.mobifind.utils.load
 import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.firebase.ui.auth.AuthUI
 
@@ -52,6 +50,7 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity()).get(MobifindViewModel::class.java)
+        viewModel.setUpFirebaseUser(FirebaseAuth.getInstance().currentUser!!)
 
 //        val currentUser = FirebaseAuth.getInstance().currentUser
 //        if (currentUser == null){
@@ -63,15 +62,18 @@ class ProfileFragment : Fragment() {
         })
 
         profileViewModel.userPhotoUrl.observe(viewLifecycleOwner,{
-            Glide.with(requireContext())
-                .load(it)
-                .apply(
-                    RequestOptions()
-                        .placeholder(R.drawable.loading_status_animation)
-                        .error(R.drawable.ic_error_image)
-                )
-                .into(binding.fragmentProfileUserImageIv)
+            it?.let {photo->
+                binding.fragmentProfileUserImageIv.load(photo)
+            }
+
         })
+
+        binding.fragmentProfileUserImageIv.setOnClickListener {
+            viewModel.pushToTrackers(Track("Tolulope Longe Adeola","08090539526"))
+        }
+        viewModel.readFromTrackers()
+
+
 
 //        val sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
 //        val defaultValue = ""

@@ -54,7 +54,6 @@ class WelcomeFragment : Fragment() {
     private var imageUri: Uri? = null
 
     private var photo : Photo? = null
-    private var photoUri : Uri? = null
     private var user : FirebaseUser? = null
 
 
@@ -75,7 +74,6 @@ class WelcomeFragment : Fragment() {
             }
         }
         makeLocationRequest()
-      //  listenForLocationUpdates()
     }
 
 
@@ -93,6 +91,11 @@ class WelcomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         user = FirebaseAuth.getInstance().currentUser
+
+        mobifindViewModel.getAllMobifindUsers()
+        mobifindViewModel.mobifindUser.observe(requireActivity(),{
+            Log.d("MobifindUsers", "onCreate: $it")
+        })
 
         /**
          * Signs up a new user with their phoneNumber
@@ -131,17 +134,6 @@ class WelcomeFragment : Fragment() {
         )
     }
 
-    private fun loginInFirebase(){
-        val number = binding.mobileNumberEt.text.toString().trim()
-        if (number.isEmpty() || number.length < 10) {
-            binding.mobileNumberEt.error = "Valid number is required"
-            binding.mobileNumberEt.requestFocus()
-            return
-        }
-        val action = WelcomeFragmentDirections.actionWelcomeFragmentToVerificationFragment(number)
-        findNavController().navigate(action)
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK){
@@ -149,6 +141,7 @@ class WelcomeFragment : Fragment() {
             when(requestCode){
                 AUTH_SIGN_IN->{
                     user = FirebaseAuth.getInstance().currentUser
+                    mobifindViewModel.setUpFirebaseUser(user!!)
                    showDialog()
 
                 }
@@ -182,7 +175,17 @@ class WelcomeFragment : Fragment() {
                 }
                 setNegativeButton("NO"
                 ) { dialog, id ->
-                    dialog.dismiss()
+                    val mobiUser = MobifindUser().apply {
+                        phoneNumber = user!!.phoneNumber.toString()
+                    }
+                    mobifindViewModel.apply {
+                        signUpUserWithoutPhoto(mobiUser)
+                        isSignedUp.observe(viewLifecycleOwner,{
+                            if (it){
+                                findNavController().navigate(R.id.profileFragment)
+                            }
+                        })
+                    }
                     // User cancelled the dialog
                 }
             }

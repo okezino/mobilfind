@@ -13,9 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestoreSettings
 class ProfileViewModel : ViewModel() {
     private var firestore : FirebaseFirestore = FirebaseFirestore.getInstance()
     private var user : FirebaseUser? = null
-    private var _mobifindUsers = MutableLiveData<ArrayList<MobifindUser>>()
-    val mobifindUser : LiveData<ArrayList<MobifindUser>>
-        get() = _mobifindUsers
+
 
     private var _userPhotoUrl = MutableLiveData<String>()
     val userPhotoUrl : LiveData<String>
@@ -27,37 +25,8 @@ class ProfileViewModel : ViewModel() {
         user = FirebaseAuth.getInstance().currentUser
         firestore.firestoreSettings = FirebaseFirestoreSettings.Builder().build()
         getPhotoUri()
-       // listenToSpecimens()
     }
 
-    /**
-     * Listens for updates from firestore
-     */
-    private fun listenToSpecimens() {
-        firestore.collection("mobifindUsers")
-            .addSnapshotListener { value, error ->
-            if (error != null){
-                Log.w("Listening", "listenToSpecimens: Listen Failed")
-                return@addSnapshotListener
-            }
-            if (value != null){
-                val allMobifindUser = ArrayList<MobifindUser>()
-                val documents =   value.documents
-                documents.forEach {
-                    val mobifindUser = it.toObject(MobifindUser::class.java)
-                    if (mobifindUser != null){
-                      //  mobifindUser.userId = it.id
-                        allMobifindUser.add(mobifindUser)
-                        if (mobifindUser.phoneNumber == user?.phoneNumber){
-                            _userPhotoUrl.value = mobifindUser.photoUri!!
-                        }
-                    }
-                }
-                _mobifindUsers.value = allMobifindUser
-            }
-        }
-
-    }
 
 
     private fun getPhotoUri(){
