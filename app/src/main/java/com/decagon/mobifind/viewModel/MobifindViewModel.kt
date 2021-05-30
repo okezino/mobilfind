@@ -5,10 +5,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.decagon.mobifind.model.data.MobifindUser
-import com.decagon.mobifind.model.data.Photo
-import com.decagon.mobifind.model.data.Track
-import com.decagon.mobifind.model.data.UserLocation
+import com.decagon.mobifind.model.data.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentReference
@@ -19,6 +16,7 @@ import com.google.firebase.storage.FirebaseStorage
 class MobifindViewModel : ViewModel() {
     private var firestore : FirebaseFirestore = FirebaseFirestore.getInstance()
     private lateinit var documentReference : DocumentReference
+    private lateinit var userDocumentReference : DocumentReference
     private var storageReference = FirebaseStorage.getInstance().reference
     private lateinit var phoneNumber : String
     private lateinit var firebaseUser: FirebaseUser
@@ -39,6 +37,14 @@ class MobifindViewModel : ViewModel() {
     val trackers : LiveData<ArrayList<String>>
         get() = _trackers
 
+    private var _response = MutableLiveData<String>()
+    val response : LiveData<String>
+        get() = _response
+
+    private var _contactList = MutableLiveData<ArrayList<Contact>>()
+    val contactList : LiveData<ArrayList<Contact>>
+        get() = _contactList
+
     private var _isSignedUpSuccess = MutableLiveData<Boolean>()
     val isSignedUp : LiveData<Boolean>
     get() = _isSignedUpSuccess
@@ -51,6 +57,11 @@ class MobifindViewModel : ViewModel() {
         firebaseUser = user
         phoneNumber = firebaseUser.phoneNumber!!
         documentReference = firestore.collection("mobifindUsers")
+            .document(phoneNumber)
+    }
+
+    fun setUpUserFirebase(phoneNumber : String){
+        userDocumentReference = firestore.collection("mobifindUsers")
             .document(phoneNumber)
     }
 
@@ -166,18 +177,25 @@ class MobifindViewModel : ViewModel() {
 
 
     fun pushToTrackers(tracker : Track){
+
         documentReference.collection("trackers")
-            .document(phoneNumber)
+            .document(tracker.phoneNumber!!)
             .set(tracker).addOnSuccessListener {
-                Log.d("PushTracker", "pushToTrackers: ${tracker.name} successfully added")
+                _response.value = "${tracker.name} has been given permission to Track you"
+            }.addOnFailureListener {
+                _response.value = "Error: Fail to add "
             }
+
     }
 
-    fun pushToTracking(tracker: Track){
-        documentReference.collection("tracking")
+
+    fun pushToTracking(){
+        var tracker = Track("myself",phoneNumber)
+        userDocumentReference.collection("tracking")
             .document(phoneNumber)
             .set(tracker).addOnSuccessListener {
                 Log.d("PushTracker", "pushToTrackers: ${tracker.name} successfully added")
+
             }
     }
 
@@ -199,5 +217,8 @@ class MobifindViewModel : ViewModel() {
                 }
             }
             }
+        fun updateContactList(list :ArrayList<Contact>) {
+            _contactList.value = list
+        }
     }
 

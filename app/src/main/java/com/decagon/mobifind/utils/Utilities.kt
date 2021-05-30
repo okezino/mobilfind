@@ -1,9 +1,13 @@
 package com.decagon.mobifind.utils
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -47,4 +51,15 @@ fun initPhoneAdapter(adapter: PhoneContactAdapter, recyclerView: RecyclerView) {
     recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
     recyclerView.adapter = adapter
     recyclerView.addItemDecoration(divider)
+}
+
+
+
+fun filterNumber(number : String) : String{
+    val result = if(number.take(1) == "+") number else number.replaceRange(0..0,"+234")
+    return result.filter { it == '+' || it.isDigit() }
+}
+
+fun inviteMessage(name : String): String{
+    return "Hello $name \n check out this cool location tracker app using the below Link +++"
 }
