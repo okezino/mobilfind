@@ -82,7 +82,10 @@ class WelcomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         if(FirebaseAuth.getInstance().currentUser != null){
-            findNavController().navigate(R.id.profileFragment)
+            user = FirebaseAuth.getInstance().currentUser
+            mobifindViewModel.setUpFirebaseUser(user!!)
+            findNavController().navigate(R.id.dashBoardFragment)
+
         }
         _binding = FragmentWelcomeBinding.inflate(layoutInflater)
         return binding.root
@@ -110,8 +113,8 @@ class WelcomeFragment : Fragment() {
         binding.loginBtn.setOnClickListener {
             //  loginInFirebase()
             // Temporary navigation to the mapsFragment
-           findNavController().navigate(R.id.mapsFragment)
-         //   findNavController().navigate(R.id.dashBoardFragment)
+          // findNavController().navigate(R.id.mapsFragment)
+           findNavController().navigate(R.id.dashBoardFragment)
 
         }
     }
@@ -183,7 +186,8 @@ class WelcomeFragment : Fragment() {
                         signUpUserWithoutPhoto(mobiUser)
                         isSignedUp.observe(viewLifecycleOwner,{
                             if (it){
-                                findNavController().navigate(R.id.profileFragment)
+                            //    findNavController().navigate(R.id.profileFragment)
+                                findNavController().navigate(R.id.dashBoardFragment)
                             }
                         })
                     }

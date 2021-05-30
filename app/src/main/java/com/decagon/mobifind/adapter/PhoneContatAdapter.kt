@@ -1,5 +1,6 @@
 package com.decagon.mobifind.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,9 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.decagon.mobifind.R
 import com.decagon.mobifind.model.data.Contact
 
-class PhoneContactAdapter(var onStatusClicked : OnclickPhoneContact) : RecyclerView.Adapter<PhoneContactAdapter.PhoneViewHolder>() {
+class PhoneContactAdapter(var onStatusClicked : OnclickPhoneContact, val phoneList : ArrayList<Contact>) : RecyclerView.Adapter<PhoneContactAdapter.PhoneViewHolder>() {
 
-    var phoneList : MutableList<Contact> = mutableListOf()
 
     inner class  PhoneViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView){
 
@@ -28,9 +28,8 @@ class PhoneContactAdapter(var onStatusClicked : OnclickPhoneContact) : RecyclerV
     override fun onBindViewHolder(holder: PhoneViewHolder, position: Int) {
         holder.nameView.text = phoneList[position].name
         holder.phoneNumberView.text = phoneList[position].number
-        holder.statusView.text = phoneList[position].status
         holder.statusView.setOnClickListener {
-              onStatusClicked.onClickStatus(phoneList[position].status,phoneList[position].number)
+              onStatusClicked.onClickStatus(phoneList[position].name,phoneList[position].number)
         }
 
     }
@@ -38,4 +37,6 @@ class PhoneContactAdapter(var onStatusClicked : OnclickPhoneContact) : RecyclerV
     override fun getItemCount(): Int {
         return phoneList.size
     }
+
+
 }

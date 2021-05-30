@@ -69,7 +69,7 @@ class ProfileFragment : Fragment() {
         })
 
         binding.fragmentProfileUserImageIv.setOnClickListener {
-            viewModel.pushToTrackers(Track("Tolulope Longe Adeola","08090539526"))
+//            viewModel.pushToTrackers(Track("Tolulope Longe Adeola","08090539526"))
         }
         viewModel.readFromTrackers()
 
