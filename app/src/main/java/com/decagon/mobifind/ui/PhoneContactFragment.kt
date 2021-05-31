@@ -34,6 +34,7 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
         get() = _binding!!
     private lateinit var adapter: PhoneContactAdapter
     private lateinit var recyclerView: RecyclerView
+    private  var photo : String? = null
     private var contactList = arrayListOf<Contact>()
     private val viewModel by activityViewModels<MobifindViewModel>()
 
@@ -49,7 +50,8 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
     ): View? {
         // Inflate the layout for this fragment
         _binding = FragmentPhoneContactBinding.inflate(layoutInflater)
-        getContact()
+
+
         return binding.root
     }
 
@@ -62,26 +64,35 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
 
 
         recyclerView = binding.recyclerviewPhoneFragment
+        getContact()
+        viewModel.getPhotoInPhotos()
+        viewModel.photoUri.observe(viewLifecycleOwner, Observer {
+            photo = it
+        })
+
 
     }
 
     override fun onClickStatus(name: String, number: String) {
         val userNumber = filterNumber(number)
-        val newTrack = Track(name, userNumber)
+
+
 
         viewModel.mobifindUser.observe(viewLifecycleOwner, Observer {
             if (it.contains(userNumber)) {
                 viewModel.setUpUserFirebase(userNumber)
-                viewModel.pushToTrackers(newTrack)
-                viewModel.pushToTracking()
+                viewModel.getTrackerPhotoInPhotos(userNumber)
+                viewModel.trackerPhotoUri.observe(viewLifecycleOwner, Observer { photo ->
+                    val newTrack = Track(name, userNumber,photo)
+                    viewModel.pushToTrackers(newTrack)
+                })
+
+                viewModel.pushToTracking(photo)
 
             } else {
                 sendMessage(number, name)
             }
-
         })
-
-
     }
 
     private fun sendMessage(number: String, name: String) {
@@ -91,7 +102,7 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
         startActivity(intent)
     }
 
-    fun getContact() {
+    private fun getContact() {
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.READ_CONTACTS
@@ -120,18 +131,16 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
                 val newNumber = Contact(name, number)
 
                 contactList.add(newNumber)
+
             }
+            adapter = PhoneContactAdapter(this, contactList)
+            initPhoneAdapter(adapter, recyclerView)
 
 
         }
     }
 
-    override fun onResume() {
-        super.onResume()
 
-        adapter = PhoneContactAdapter(this, contactList)
-        initPhoneAdapter(adapter, recyclerView)
-    }
 
     override fun onDestroy() {
         super.onDestroy()

@@ -18,7 +18,7 @@ class MobifindViewModel : ViewModel() {
     private lateinit var documentReference : DocumentReference
     private lateinit var userDocumentReference : DocumentReference
     private var storageReference = FirebaseStorage.getInstance().reference
-    private lateinit var phoneNumber : String
+    lateinit var phoneNumber : String
     private lateinit var firebaseUser: FirebaseUser
 
     private var _userLocation = MutableLiveData<UserLocation>()
@@ -32,6 +32,14 @@ class MobifindViewModel : ViewModel() {
     private var _mobifindUsers = MutableLiveData<ArrayList<String>>()
     val mobifindUser : LiveData<ArrayList<String>>
         get() = _mobifindUsers
+
+    private var _photoUri = MutableLiveData<String?>()
+    val photoUri : LiveData<String?>
+        get() = _photoUri
+
+    private var _trackerPhotoUri = MutableLiveData<String?>()
+    val trackerPhotoUri : LiveData<String?>
+        get() = _trackerPhotoUri
 
     private var _trackers = MutableLiveData<ArrayList<String>>()
     val trackers : LiveData<ArrayList<String>>
@@ -154,6 +162,34 @@ class MobifindViewModel : ViewModel() {
             }
     }
 
+    fun getTrackerPhotoInPhotos(phoneNumber: String) {
+        userDocumentReference.collection("photos")
+            .document(phoneNumber).get().addOnSuccessListener {
+                val photo = it.data!!
+                for (i in photo.keys) {
+                    if (i == "remoteUri") {
+                        _trackerPhotoUri.value = photo[i].let { photo[i].toString() }
+                        break
+                    }
+                }
+            }
+
+    }
+
+    fun getPhotoInPhotos() {
+        documentReference.collection("photos")
+            .document(phoneNumber).get().addOnSuccessListener {
+                val photo = it.data!!
+                for (i in photo.keys) {
+                    if (i == "remoteUri") {
+                        _photoUri.value = photo[i].let { photo[i].toString() }
+                        break
+                    }
+                }
+            }
+
+    }
+
 
     fun getAllMobifindUsers() {
         firestore.collection("mobifindUsers")
@@ -189,8 +225,8 @@ class MobifindViewModel : ViewModel() {
     }
 
 
-    fun pushToTracking(){
-        var tracker = Track("myself",phoneNumber)
+    fun pushToTracking(photo:String?){
+        var tracker = Track("myself",phoneNumber,photo)
         userDocumentReference.collection("tracking")
             .document(phoneNumber)
             .set(tracker).addOnSuccessListener {
