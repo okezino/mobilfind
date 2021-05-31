@@ -1,20 +1,19 @@
 package com.decagon.mobifind.ui
 
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.UserAdapter
 import com.decagon.mobifind.databinding.FragmentTrackingBinding
+import com.decagon.mobifind.model.data.TrackState
 import com.decagon.mobifind.utils.initAdapter
-import com.decagon.mobifind.viewModel.TrackViewModel
-import com.google.android.material.snackbar.Snackbar
+import com.decagon.mobifind.viewModel.MobifindViewModel
 
 class TrackingFragment : Fragment() {
     private var _binding: FragmentTrackingBinding? = null
@@ -22,12 +21,13 @@ class TrackingFragment : Fragment() {
         get() = _binding!!
     private lateinit var adapter: UserAdapter
     private lateinit var recyclerView: RecyclerView
-    private val viewModel by activityViewModels<TrackViewModel>()
+    private val viewModel by activityViewModels<MobifindViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        viewModel.getTrackList(TrackState.TRACKING)
        _binding = FragmentTrackingBinding.inflate(layoutInflater)
         return binding.root
     }

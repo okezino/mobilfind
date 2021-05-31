@@ -5,16 +5,17 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.decagon.mobifind.databinding.DashBoardRecyclerviewItemBinding
 import com.decagon.mobifind.model.data.MobifindUser
+import com.decagon.mobifind.model.data.Track
 import com.decagon.mobifind.utils.load
 
 class UserAdapter(private val clickListener: ClickListener? = null) :
     RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
 
-    private var users = mutableListOf<MobifindUser>()
+    private var users = mutableListOf<Track>()
 
     inner class UserViewHolder(val binding: DashBoardRecyclerviewItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(user: MobifindUser) {
+        fun bind(user: Track) {
             clickListener?.let { clickListener ->
                 binding.root.setOnClickListener {
                     clickListener.onClick(user)
@@ -41,12 +42,12 @@ class UserAdapter(private val clickListener: ClickListener? = null) :
 
     override fun getItemCount(): Int = users.size
 
-    class ClickListener(val clickListener: (user: MobifindUser) -> Unit) {
-        fun onClick(user: MobifindUser) = clickListener(user)
+    class ClickListener(val clickListener: (user: Track) -> Unit) {
+        fun onClick(user: Track) = clickListener(user)
     }
 
-    fun loadUsers(users: List<MobifindUser>) {
-        this.users = users as MutableList<MobifindUser>
+    fun loadUsers(users: List<Track>) {
+        this.users = users as MutableList<Track>
         notifyDataSetChanged()
     }
 }

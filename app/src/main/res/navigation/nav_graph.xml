@@ -16,11 +16,6 @@
             app:destination="@id/verificationFragment" />
     </fragment>
     <fragment
-        android:id="@+id/selectphoto_fragment"
-        android:name="com.decagon.mobifind.ui.SelectPhoto"
-        android:label="selectphoto_fragment"
-        tools:layout="@layout/selectphoto_fragment" />
-    <fragment
         android:id="@+id/profileFragment"
         android:name="com.decagon.mobifind.ui.ProfileFragment"
         android:label="profile_fragment"
@@ -38,7 +33,11 @@
         android:id="@+id/dashBoardFragment"
         android:name="com.decagon.mobifind.ui.DashBoardFragment"
         android:label="fragment_dash_board"
-        tools:layout="@layout/fragment_dash_board" />
+        tools:layout="@layout/fragment_dash_board" >
+        <action
+            android:id="@+id/action_dashBoardFragment_to_photoViewFragment"
+            app:destination="@id/photoViewFragment" />
+    </fragment>
     <fragment
         android:id="@+id/mapsFragment"
         android:name="com.decagon.mobifind.ui.MapsFragment"
@@ -49,4 +48,13 @@
         android:name="com.decagon.mobifind.ui.PhoneContactFragment"
         android:label="fragment_phone_contact"
         tools:layout="@layout/fragment_phone_contact" />
+    <fragment
+        android:id="@+id/photoViewFragment"
+        android:name="com.decagon.mobifind.ui.PhotoViewFragment"
+        android:label="photo_view_fragment"
+        tools:layout="@layout/photo_view_fragment" >
+        <argument
+            android:name="photoUri"
+            app:argType="string" />
+    </fragment>
 </navigation>

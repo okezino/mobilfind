@@ -6,12 +6,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.decagon.mobifind.model.data.*
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.storage.FirebaseStorage
+import com.decagon.mobifind.model.data.TrackState.*
 
 class MobifindViewModel : ViewModel() {
     private var firestore : FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -56,6 +56,12 @@ class MobifindViewModel : ViewModel() {
     private var _isSignedUpSuccess = MutableLiveData<Boolean>()
     val isSignedUp : LiveData<Boolean>
     get() = _isSignedUpSuccess
+
+    private val _tracking = MutableLiveData<List<Track>>(emptyList())
+    val tracking = _tracking as LiveData<List<Track>>
+
+    private val _myTrackers = MutableLiveData<List<Track>>(emptyList())
+    val myTrackers = _myTrackers as LiveData<List<Track>>
 
     init {
         firestore.firestoreSettings = FirebaseFirestoreSettings.Builder().build()
@@ -178,16 +184,21 @@ class MobifindViewModel : ViewModel() {
 
     fun getPhotoInPhotos() {
         documentReference.collection("photos")
-            .document(phoneNumber).get().addOnSuccessListener {
-                val photo = it.data!!
-                for (i in photo.keys) {
-                    if (i == "remoteUri") {
-                        _photoUri.value = photo[i].let { photo[i].toString() }
-                        break
+            .document(phoneNumber).addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.d("Error getting photo", error.message!!)
+                    return@addSnapshotListener
+                }
+                if (value != null) {
+                    val photo = value.data!!
+                    for (i in photo.keys) {
+                        if (i == "remoteUri") {
+                            _photoUri.value = photo[i].toString()
+                            return@addSnapshotListener
+                        }
                     }
                 }
             }
-
     }
 
 
@@ -213,7 +224,6 @@ class MobifindViewModel : ViewModel() {
 
 
     fun pushToTrackers(tracker : Track){
-
         documentReference.collection("trackers")
             .document(tracker.phoneNumber!!)
             .set(tracker).addOnSuccessListener {
@@ -253,8 +263,32 @@ class MobifindViewModel : ViewModel() {
                 }
             }
             }
+
         fun updateContactList(list :ArrayList<Contact>) {
             _contactList.value = list
         }
+
+    // Method for getting trackers and tracking from database
+    fun getTrackList(path: TrackState) {
+        documentReference.collection(path.state)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    Log.w("Listening", "listenToSpecimens: Listen Failed")
+                    return@addSnapshotListener
+                }
+                if (value != null) {
+                    val trackList = mutableListOf<Track>()
+                    value.documents.forEach { snapshot ->
+                        val track = snapshot.toObject(Track::class.java)
+                        track?.let { trackList.add(it) }
+                    }
+                    when (path.state) {
+                        TRACKERS.state -> _myTrackers.value = trackList
+                        TRACKING.state -> _tracking.value = trackList
+                    }
+                }
+            }
     }
+}
+
 

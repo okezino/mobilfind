@@ -36,7 +36,6 @@ fun ImageView.load(imageUrl: String) {
             .placeholder(R.drawable.loading_status_animation)
             .error(R.drawable.ic_error_image)
             ).into(this)
-    Log.d("InfoAdapt", "load: $imageUrl")
 }
 
 fun initAdapter(adapter: UserAdapter, recyclerView: RecyclerView) {
