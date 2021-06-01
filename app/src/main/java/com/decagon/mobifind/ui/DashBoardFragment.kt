@@ -48,7 +48,7 @@ class DashBoardFragment : Fragment() {
          viewModel.getPhotoInPhotos()
 
         // Intent result handler
-        resultLauncher = registerForActivityResult(StartActivityForResult()) { result ->
+        resultLauncher = requireActivity().registerForActivityResult(StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 val data: Intent? = result.data
                 imageUri = data?.data!!
