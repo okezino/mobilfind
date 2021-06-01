@@ -1,27 +1,29 @@
 package com.decagon.mobifind.ui
 
-import android.app.Activity
-import android.content.Context
+import android.app.Activity.RESULT_OK
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.ViewPagerAdapter
 import com.decagon.mobifind.databinding.FragmentDashBoardBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
-import com.decagon.mobifind.utils.*
+import com.decagon.mobifind.utils.DepthPageTransformer
+import com.decagon.mobifind.utils.load
+import com.decagon.mobifind.utils.showSnackBar
+import com.decagon.mobifind.utils.showToast
 import com.decagon.mobifind.viewModel.MobifindViewModel
-import com.decagon.mobifind.viewModel.SelectPhotoViewModel
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.auth.FirebaseAuth
@@ -34,23 +36,32 @@ class DashBoardFragment : Fragment() {
         get() = _binding!!
     private var imageUri: Uri? = null
     private var photo: Photo? = null
+    private var photoUri: String? = null
+    private lateinit var resultLauncher: ActivityResultLauncher<Intent>
     private var currentUser: FirebaseUser? = null
-    private lateinit var sharedPref: SharedPreferences
-    private val viewModel by viewModels<SelectPhotoViewModel>()
-    private lateinit var mobifindViewModel: MobifindViewModel
+    private val viewModel by activityViewModels<MobifindViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+         viewModel.getPhotoInPhotos()
+
+        // Intent result handler
+        resultLauncher = requireActivity().registerForActivityResult(StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val data: Intent? = result.data
+                imageUri = data?.data!!
+                photo = Photo(localUri = imageUri.toString())
+                uploadPhoto()
+            }
+        }
         _binding = FragmentDashBoardBinding.inflate(layoutInflater)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        mobifindViewModel = ViewModelProvider(requireActivity()).get(MobifindViewModel::class.java)
 
         currentUser = FirebaseAuth.getInstance().currentUser
 
@@ -63,7 +74,35 @@ class DashBoardFragment : Fragment() {
             }
         }
 
-        binding.userImage.setOnClickListener { prepOpenImageGallery() }
+        viewModel.photoUri.observe(viewLifecycleOwner) {
+            if (it != null) {
+                binding.userImage.load(it)
+                photoUri = it
+            }
+        }
+
+        binding.userImage.setOnClickListener {
+            AlertDialog.Builder(requireContext(), R.style.MyDialogTheme)
+               // .setTitle("Change Photo")
+                .setItems(
+                    arrayOf("Update Photo", "View Photo")
+                ) { _, which ->
+                    if (which == 0) {
+                        prepOpenImageGallery()
+                    } else if (which == 1) {
+                        if (photoUri != null) {
+                            val action = DashBoardFragmentDirections
+                                .actionDashBoardFragmentToPhotoViewFragment(photoUri!!)
+                            findNavController().navigate(action)
+                        } else {
+                            binding.root.showSnackBar("You haven't updated your profile image")
+                        }
+                    }
+                }
+                .setNegativeButton("CANCEL") { _, _ -> }
+                .create()
+                .show()
+             }
 
         val viewPagerAdapter = ViewPagerAdapter(childFragmentManager, lifecycle)
         binding.viewPager.apply {
@@ -75,9 +114,6 @@ class DashBoardFragment : Fragment() {
             tabs.text = if (position == 0) "Tracking" else  "Trackers"
         }.attach()
 
-        sharedPref = activity?.getPreferences(Context.MODE_PRIVATE) ?: return
-        val profilePhoto = sharedPref.getString(REMOTE_URI, null)
-        profilePhoto?.let { binding.userImage.load(it) }
     }
 
     override fun onDestroyView() {
@@ -86,45 +122,27 @@ class DashBoardFragment : Fragment() {
     }
 
     private fun prepOpenImageGallery(){
-        Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
-            type = "image/*"
-            startActivityForResult(this, PICK_IMAGE)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK){
-            if (requestCode == PICK_IMAGE){
-                    try {
-                        imageUri = data?.data!!
-                        binding.userImage.setImageURI(imageUri)
-                        photo = Photo(localUri = imageUri.toString())
-                        binding.root.showToast("Image Saved")
-                        uploadPhoto()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
-            }
-        }
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        intent.type = "image/*"
+        resultLauncher.launch(intent)
     }
 
     private fun uploadPhoto() {
-        if (currentUser == null) return
+        binding.fragmentSelectPhotoProgressBar.visibility = View.VISIBLE
+        if (currentUser == null) {
+            binding.fragmentSelectPhotoProgressBar.visibility = View.GONE
+            return
+        }
 
         val mobiUser = MobifindUser().apply {
             phoneNumber = currentUser!!.phoneNumber.toString()
         }
-        photo?.let { mobifindViewModel.save(mobiUser, it, currentUser!!) }
+        photo?.let { viewModel.save(mobiUser, it, currentUser!!) }
 
-        mobifindViewModel.uploadStatus.observe(viewLifecycleOwner) {
+        viewModel.uploadStatus.observe(viewLifecycleOwner) {
             if (it.isNotEmpty()) {
-                with(sharedPref.edit()) {
-                    putString(REMOTE_URI, it)
-                    apply()
-                }
-               // binding.fragmentSelectPhotoProgressBar.visibility = View.GONE
                 binding.root.showSnackBar("Authentication and Image Upload Successful")
+                binding.fragmentSelectPhotoProgressBar.visibility = View.GONE
             }
         }
 

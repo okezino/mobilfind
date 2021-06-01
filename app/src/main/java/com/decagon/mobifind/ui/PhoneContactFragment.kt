@@ -39,19 +39,12 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
     private val viewModel by activityViewModels<MobifindViewModel>()
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         _binding = FragmentPhoneContactBinding.inflate(layoutInflater)
-
-
         return binding.root
     }
 
@@ -135,12 +128,8 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
             }
             adapter = PhoneContactAdapter(this, contactList)
             initPhoneAdapter(adapter, recyclerView)
-
-
         }
     }
-
-
 
     override fun onDestroy() {
         super.onDestroy()

@@ -70,4 +70,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tab_view" />
 
+    <ProgressBar
+        android:id="@+id/fragment_selectPhoto_progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="88dp"
+        android:layout_height="82dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
