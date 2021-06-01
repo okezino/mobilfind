@@ -19,10 +19,7 @@ import com.decagon.mobifind.adapter.ViewPagerAdapter
 import com.decagon.mobifind.databinding.FragmentDashBoardBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
-import com.decagon.mobifind.utils.DepthPageTransformer
-import com.decagon.mobifind.utils.load
-import com.decagon.mobifind.utils.showSnackBar
-import com.decagon.mobifind.utils.showToast
+import com.decagon.mobifind.utils.*
 import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.tabs.TabLayoutMediator
@@ -37,7 +34,6 @@ class DashBoardFragment : Fragment() {
     private var imageUri: Uri? = null
     private var photo: Photo? = null
     private var photoUri: String? = null
-    private lateinit var resultLauncher: ActivityResultLauncher<Intent>
     private var currentUser: FirebaseUser? = null
     private val viewModel by activityViewModels<MobifindViewModel>()
 
@@ -46,16 +42,6 @@ class DashBoardFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
          viewModel.getPhotoInPhotos()
-
-        // Intent result handler
-        resultLauncher = requireActivity().registerForActivityResult(StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                val data: Intent? = result.data
-                imageUri = data?.data!!
-                photo = Photo(localUri = imageUri.toString())
-                uploadPhoto()
-            }
-        }
         _binding = FragmentDashBoardBinding.inflate(layoutInflater)
         return binding.root
     }
@@ -124,7 +110,18 @@ class DashBoardFragment : Fragment() {
     private fun prepOpenImageGallery(){
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         intent.type = "image/*"
-        resultLauncher.launch(intent)
+        startActivityForResult(intent, PICK_IMAGE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && requestCode == PICK_IMAGE) {
+            imageUri = data?.data!!
+            photo = Photo(localUri = imageUri.toString())
+            uploadPhoto()
+        } else {
+            binding.root.showSnackBar("Unable to pick image. Please try again")
+        }
     }
 
     private fun uploadPhoto() {
