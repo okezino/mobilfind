@@ -21,6 +21,9 @@ class MobifindViewModel : ViewModel() {
     lateinit var phoneNumber : String
     private lateinit var firebaseUser: FirebaseUser
 
+    private val _isTrackerDeleted = MutableLiveData<Boolean>()
+    val isTrackerDeleted = _isTrackerDeleted as LiveData<Boolean>
+
     private var _userLocation = MutableLiveData<UserLocation>()
     val userLocation : LiveData<UserLocation>
     get() = _userLocation
@@ -289,6 +292,13 @@ class MobifindViewModel : ViewModel() {
                 }
             }
     }
+
+    fun deleteFromTrackers(phoneNumber: String) {
+        documentReference.collection(TRACKERS.state).document(phoneNumber).delete()
+            .addOnSuccessListener { _isTrackerDeleted.value = true }
+            .addOnFailureListener {
+                _isTrackerDeleted.value = false
+                Log.d("ERROR DELETING TRACKER", "${it.message}")
+            }
+    }
 }
-
-

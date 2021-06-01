@@ -69,7 +69,6 @@ class DashBoardFragment : Fragment() {
 
         binding.userImage.setOnClickListener {
             AlertDialog.Builder(requireContext(), R.style.MyDialogTheme)
-               // .setTitle("Change Photo")
                 .setItems(
                     arrayOf("Update Photo", "View Photo")
                 ) { _, which ->
@@ -91,10 +90,7 @@ class DashBoardFragment : Fragment() {
              }
 
         val viewPagerAdapter = ViewPagerAdapter(childFragmentManager, lifecycle)
-        binding.viewPager.apply {
-            adapter = viewPagerAdapter
-            setPageTransformer(DepthPageTransformer())
-        }
+        binding.viewPager.adapter = viewPagerAdapter
 
         TabLayoutMediator(binding.tabView, binding.viewPager) { tabs, position ->
             tabs.text = if (position == 0) "Tracking" else  "Trackers"

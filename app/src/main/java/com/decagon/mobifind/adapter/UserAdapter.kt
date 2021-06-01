@@ -50,4 +50,6 @@ class UserAdapter(private val clickListener: ClickListener? = null) :
         this.users = users as MutableList<Track>
         notifyDataSetChanged()
     }
+
+    fun getTrack(id: Int): Track = users[id]
 }
