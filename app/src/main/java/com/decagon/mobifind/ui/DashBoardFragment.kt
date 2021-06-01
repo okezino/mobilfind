@@ -8,8 +8,6 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -19,13 +17,14 @@ import com.decagon.mobifind.adapter.ViewPagerAdapter
 import com.decagon.mobifind.databinding.FragmentDashBoardBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
-import com.decagon.mobifind.utils.*
+import com.decagon.mobifind.utils.PICK_IMAGE
+import com.decagon.mobifind.utils.load
+import com.decagon.mobifind.utils.showSnackBar
 import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import java.io.IOException
 
 class DashBoardFragment : Fragment() {
     private var _binding: FragmentDashBoardBinding? = null
