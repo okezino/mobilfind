@@ -293,9 +293,15 @@ class MobifindViewModel : ViewModel() {
             }
     }
 
-    fun deleteFromTrackers(phoneNumber: String) {
-        documentReference.collection(TRACKERS.state).document(phoneNumber).delete()
-            .addOnSuccessListener { _isTrackerDeleted.value = true }
+    // Method for deleting tracker from trackers list and the user from the tracker's
+    // tracking list
+    fun deleteFromTrackers(tPhoneNumber: String) {
+        documentReference.collection(TRACKERS.state).document(tPhoneNumber).delete()
+            .addOnSuccessListener {
+                firestore.collection("mobifindUsers").document(tPhoneNumber)
+                    .collection(TRACKING.state).document(phoneNumber).delete()
+                    .addOnSuccessListener { _isTrackerDeleted.value = true }
+            }
             .addOnFailureListener {
                 _isTrackerDeleted.value = false
                 Log.d("ERROR DELETING TRACKER", "${it.message}")
