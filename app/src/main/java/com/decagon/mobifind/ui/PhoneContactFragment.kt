@@ -54,12 +54,71 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact,EasyPermissions.Per
         return binding.root
     }
 
-    fun hasContactPermission() = EasyPermissions.hasPermissions(requireContext(),Manifest.permission.READ_CONTACTS)
-    fun requestPermission(){
-        EasyPermissions.requestPermissions(this,
-            "You can not update your Tracker List without Contact Permission",
-        REQUEST_READ_CONTACT,Manifest.permission.READ_CONTACTS)
+
+
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.phoneContactBackBtn.setOnClickListener {
+            findNavController().navigate(R.id.dashBoardFragment)
+        }
+
+        recyclerView = binding.recyclerviewPhoneFragment
+
+
+        if (!hasContactPermission()) requestPermission() else getContact()
+
+
+        viewModel.getPhotoInPhotos()
+        viewModel.photoUri.observe(viewLifecycleOwner, Observer {
+            photo = it
+        })
     }
+
+
+
+
+
+
+
+    override fun onClickStatus(name: String, number: String) {
+        val userNumber = filterNumber(number)
+
+        viewModel.mobifindUser.observe(viewLifecycleOwner, Observer {
+            if (it.contains(userNumber)) {
+                viewModel.setUpUserFirebase(userNumber)
+
+                 if(viewModel.getTrackerPhotoInPhotos(userNumber,name)){
+                     view?.showSnackBar("$name has been successfully added to Tracker List")
+                     findNavController().navigate(R.id.dashBoardFragment)
+                 }else {
+                     view?.showSnackBar("Failed Operation: Try again")
+                 }
+
+                viewModel.pushToTracking(photo)
+
+
+            } else {
+                sendMessage(number, name)
+            }
+        })
+    }
+
+
+
+
+
+
+
+
+    private fun sendMessage(number: String, name: String) {
+        val uri = Uri.parse("smsto:$number")
+        val intent = Intent(Intent.ACTION_SENDTO, uri)
+        intent.putExtra("sms_body", inviteMessage(name))
+        startActivity(intent)
+    }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -72,127 +131,22 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact,EasyPermissions.Per
     }
 
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        binding.phoneContactBackBtn.setOnClickListener {
-            findNavController().navigate(R.id.dashBoardFragment)
-        }
-
-        recyclerView = binding.recyclerviewPhoneFragment
-//
-//        setUpPermissions(
-//            android.Manifest.permission.READ_CONTACTS,
-//            "contacts",
-//            REQUEST_READ_CONTACT
-//        )
-        if (!hasContactPermission()){
-            requestPermission()
-        }else{
-            getContact()
-        }
-
-
-        viewModel.getPhotoInPhotos()
-
-        viewModel.photoUri.observe(viewLifecycleOwner, Observer {
-            photo = it
-        })
-    }
-
-    private fun setUpPermissions(permission: String, name: String, requestCode: Int) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            when {
-                ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    permission
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                   getContact()
-                }
-                shouldShowRequestPermissionRationale(permission) -> showDialog(
-                    permission,
-                    name,
-                    requestCode
-                )
-
-                else -> requireActivity().requestPermissions(arrayOf(permission), requestCode)
-            }
-        }
-    }
-
-    fun showDialog(permission: String, name: String, requestCode: Int) {
-        val builder = AlertDialog.Builder(requireContext())
-
-        builder.apply {
-            setTitle("Permission required")
-            setMessage("Permission to access your $name is required to use this app")
-            setPositiveButton("Allow") { dialog, which ->
-                ActivityCompat.requestPermissions(
-                    requireActivity(),
-                    arrayOf(permission),
-                    requestCode
-                )
-            }
-        }
-        builder.create().show()
+    fun hasContactPermission() = EasyPermissions.hasPermissions(requireContext(),Manifest.permission.READ_CONTACTS)
+    fun requestPermission(){
+        EasyPermissions.requestPermissions(this,
+            "You can not update your Tracker List without Contact Permission",
+            REQUEST_READ_CONTACT,Manifest.permission.READ_CONTACTS)
     }
 
     override fun onPermissionsDenied(requestCode: Int, perms: List<String>) {
-   if(EasyPermissions.somePermissionDenied(this,perms.first())){
-       SettingsDialog.Builder(requireContext()).build().show()
-   }else requestPermission()
+        if(EasyPermissions.somePermissionDenied(this,perms.first())){
+            SettingsDialog.Builder(requireContext()).build().show()
+        }else requestPermission()
     }
 
     override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {
-        if(hasContactPermission()) getContact() else {
-            view?.showSnackBar("Denield")
-        }
-    }
+        if(hasContactPermission()) getContact() else view?.showSnackBar("Deny")
 
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<out String>,
-//        grantResults: IntArray
-//    ) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        fun innerCheck(name: String) {
-//            if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-//                getContact()
-//            } else {
-//                Toast.makeText(requireContext(), "$name permission granted", Toast.LENGTH_LONG)
-//                    .show()
-//            }
-//        }
-//
-//        when (requestCode) {
-//            REQUEST_READ_CONTACT -> innerCheck("contacts")
-//        }
-//    }
-
-
-    override fun onClickStatus(name: String, number: String) {
-        val userNumber = filterNumber(number)
-
-        viewModel.mobifindUser.observe(viewLifecycleOwner, Observer {
-            if (it.contains(userNumber)) {
-                viewModel.setUpUserFirebase(userNumber)
-                // viewModel.getTrackerPhotoInPhotos(userNumber)
-//                viewModel.trackerPhotoUri.observe(viewLifecycleOwner, Observer { photo ->
-//                    val newTrack = Track(name, userNumber,photo)
-//                    viewModel.pushToTrackers(newTrack)
-//                })
-                val newTrack = Track(name, userNumber)
-                viewModel.pushToTrackers(newTrack)
-                viewModel.pushToTracking(photo)
-                viewModel.response.observe(viewLifecycleOwner, Observer { response ->
-                    view?.showSnackBar(response)
-
-                })
-
-            } else {
-                sendMessage(number, name)
-            }
-        })
     }
 
 
@@ -218,40 +172,12 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact,EasyPermissions.Per
             recyclerView.adapter = adapter
             initPhoneAdapter(adapter, recyclerView)
         }
-        }
+    }
 
-//    private fun getContact() {
-//
-//        val contact = requireActivity().contentResolver.query(
-//            ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null
-//        )
-//        while (contact!!.moveToNext()) {
-//            val name =
-//                contact.getString(contact.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
-//            val number =
-//                contact.getString(contact.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
-//
-//            val newNumber = Contact(name, number)
-//            contactList.add(newNumber)
-//
-//        }
-//
-//        adapter = PhoneContactAdapter(this, contactList)
-//        recyclerView.adapter = adapter
-//        initPhoneAdapter(adapter, recyclerView)
-//    }
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
-    }
-
-
-    private fun sendMessage(number: String, name: String) {
-        val uri = Uri.parse("smsto:$number")
-        val intent = Intent(Intent.ACTION_SENDTO, uri)
-        intent.putExtra("sms_body", inviteMessage(name))
-        startActivity(intent)
     }
 
 

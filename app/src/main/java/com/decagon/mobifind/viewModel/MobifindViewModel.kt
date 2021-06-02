@@ -1,10 +1,12 @@
 package com.decagon.mobifind.viewModel
 
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.decagon.mobifind.MainActivity
 import com.decagon.mobifind.model.data.*
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentReference
@@ -12,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.storage.FirebaseStorage
 import com.decagon.mobifind.model.data.TrackState.*
+import kotlinx.coroutines.delay
 
 class MobifindViewModel : ViewModel() {
     private var firestore : FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -48,8 +51,8 @@ class MobifindViewModel : ViewModel() {
     val trackers : LiveData<ArrayList<String>>
         get() = _trackers
 
-    private var _response = MutableLiveData<String>()
-    val response : LiveData<String>
+    private var _response = MutableLiveData<Boolean>()
+    val response : LiveData<Boolean>
         get() = _response
 
     private var _contactList = MutableLiveData<ArrayList<Contact>>()
@@ -171,20 +174,28 @@ class MobifindViewModel : ViewModel() {
             }
     }
 
-//    fun getTrackerPhotoInPhotos(phoneNumber: String) {
-//        userDocumentReference.collection("photos")
-//            .document(phoneNumber).get().addOnSuccessListener {
-//                val photo = it.data!!
-//                for (i in photo.keys) {
-//                    if (i == "remoteUri") {
-//                        _trackerPhotoUri.value = photo[i].let { photo[i].toString() }
-//                        Log.d("God",photo[i].let { photo[i].toString() })
-//                        break
-//                    }
-//                }
-//            }
-//
-//    }
+
+
+
+    fun getTrackerPhotoInPhotos(number: String, name : String) : Boolean{
+        var response = true
+        userDocumentReference.collection("photos")
+            .document(number).get().addOnSuccessListener {
+                val photo = it.data!!
+                for (i in photo.keys) {
+                    if (i == "remoteUri") {
+                        val photoShot : String? = if(photo[i] != null ) photo[i].toString() else null
+                        var tracker = Track(name,number,photoShot)
+                        response = pushToTrackers(tracker)
+
+                        break
+                    }
+                }
+            }
+
+       return response
+
+    }
 
     fun getPhotoInPhotos() {
         documentReference.collection("photos")
@@ -227,15 +238,17 @@ class MobifindViewModel : ViewModel() {
             }
 
 
-    fun pushToTrackers(tracker : Track){
+    fun pushToTrackers(tracker : Track) : Boolean {
+        var result : Boolean = true
         documentReference.collection("trackers")
             .document(tracker.phoneNumber!!)
             .set(tracker).addOnSuccessListener {
-                _response.value = "${tracker.name} has been successfully added to Tracker List"
+                _response.value = true
             }.addOnFailureListener {
-                _response.value = "Failed Operation: Try again"
+                _response.value = false
             }
 
+         return result
     }
 
 
@@ -270,9 +283,7 @@ class MobifindViewModel : ViewModel() {
             }
             }
 
-        fun updateContactList(list :ArrayList<Contact>) {
-            _contactList.value = list
-        }
+
 
     // Method for getting trackers and tracking from database
     fun getTrackList(path: TrackState) {

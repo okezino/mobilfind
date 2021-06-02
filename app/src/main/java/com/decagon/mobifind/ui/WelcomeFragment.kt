@@ -113,7 +113,7 @@ class WelcomeFragment : Fragment() {
         binding.loginBtn.setOnClickListener {
             val number = binding.mobileNumberEt.text.toString()
 
-            signInPhoneNumberFirebaseUI(number)
+            signInPhoneNumberFirebaseUI(filterNumber(number))
 
         }
     }
