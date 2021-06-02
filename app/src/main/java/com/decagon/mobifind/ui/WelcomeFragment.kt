@@ -104,17 +104,16 @@ class WelcomeFragment : Fragment() {
          * Signs up a new user with their phoneNumber
          */
         binding.signupBtn.setOnClickListener{
-            signInPhoneNumberFirebaseUI()
+            signUpPhoneNumberFirebaseUI()
         }
 
         /**
          * An alternative login route
          */
         binding.loginBtn.setOnClickListener {
-            //  loginInFirebase()
-            // Temporary navigation to the mapsFragment
-          // findNavController().navigate(R.id.mapsFragment)
-           findNavController().navigate(R.id.dashBoardFragment)
+            val number = binding.mobileNumberEt.text.toString()
+
+            signInPhoneNumberFirebaseUI(filterNumber(number))
 
         }
     }
@@ -124,7 +123,21 @@ class WelcomeFragment : Fragment() {
         _binding = null
     }
 
-    private fun signInPhoneNumberFirebaseUI() {
+    private fun signInPhoneNumberFirebaseUI(number:String) {
+        binding.fragmentWelcomeProgress.visibility = View.VISIBLE
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.PhoneBuilder().setDefaultNumber(number).build(),
+        )
+        startActivityForResult(
+            AuthUI.getInstance()
+                .createSignInIntentBuilder()
+                .setAvailableProviders(providers)
+                .build(),
+            AUTH_SIGN_UP
+        )
+    }
+
+    private fun signUpPhoneNumberFirebaseUI() {
         binding.fragmentWelcomeProgress.visibility = View.VISIBLE
         val providers = arrayListOf(
             AuthUI.IdpConfig.PhoneBuilder().build(),
@@ -147,6 +160,12 @@ class WelcomeFragment : Fragment() {
                     user = FirebaseAuth.getInstance().currentUser
                     mobifindViewModel.setUpFirebaseUser(user!!)
                    showDialog()
+
+                }
+                AUTH_SIGN_UP->{
+                    user = FirebaseAuth.getInstance().currentUser
+                    mobifindViewModel.setUpFirebaseUser(user!!)
+                    findNavController().navigate(R.id.dashBoardFragment)
 
                 }
                 LOCATION_UPDATE_STATE->{
