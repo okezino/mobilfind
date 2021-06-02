@@ -171,19 +171,20 @@ class MobifindViewModel : ViewModel() {
             }
     }
 
-    fun getTrackerPhotoInPhotos(phoneNumber: String) {
-        userDocumentReference.collection("photos")
-            .document(phoneNumber).get().addOnSuccessListener {
-                val photo = it.data!!
-                for (i in photo.keys) {
-                    if (i == "remoteUri") {
-                        _trackerPhotoUri.value = photo[i].let { photo[i].toString() }
-                        break
-                    }
-                }
-            }
-
-    }
+//    fun getTrackerPhotoInPhotos(phoneNumber: String) {
+//        userDocumentReference.collection("photos")
+//            .document(phoneNumber).get().addOnSuccessListener {
+//                val photo = it.data!!
+//                for (i in photo.keys) {
+//                    if (i == "remoteUri") {
+//                        _trackerPhotoUri.value = photo[i].let { photo[i].toString() }
+//                        Log.d("God",photo[i].let { photo[i].toString() })
+//                        break
+//                    }
+//                }
+//            }
+//
+//    }
 
     fun getPhotoInPhotos() {
         documentReference.collection("photos")
@@ -230,9 +231,9 @@ class MobifindViewModel : ViewModel() {
         documentReference.collection("trackers")
             .document(tracker.phoneNumber!!)
             .set(tracker).addOnSuccessListener {
-                _response.value = "${tracker.name} has been given permission to Track you"
+                _response.value = "${tracker.name} has been successfully added to Tracker List"
             }.addOnFailureListener {
-                _response.value = "Error: Fail to add "
+                _response.value = "Failed Operation: Try again"
             }
 
     }
@@ -244,6 +245,8 @@ class MobifindViewModel : ViewModel() {
             .document(phoneNumber)
             .set(tracker).addOnSuccessListener {
                 Log.d("PushTracker", "pushToTrackers: ${tracker.name} successfully added")
+
+            }.addOnFailureListener {
 
             }
     }

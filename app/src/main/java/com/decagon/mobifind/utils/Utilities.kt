@@ -48,7 +48,6 @@ fun initAdapter(adapter: UserAdapter, recyclerView: RecyclerView) {
 fun initPhoneAdapter(adapter: PhoneContactAdapter, recyclerView: RecyclerView) {
     val divider = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
     recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
-    recyclerView.adapter = adapter
     recyclerView.addItemDecoration(divider)
 }
 
