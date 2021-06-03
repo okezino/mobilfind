@@ -72,6 +72,16 @@ class DashBoardFragment : Fragment() {
             currentUserName = it
         }
 
+        viewModel.uploadStatus.observe(viewLifecycleOwner) {
+            if (it != null) {
+                if (it.isNotEmpty()) {
+                    binding.root.showSnackBar("Image Upload Successful")
+                    binding.fragmentSelectPhotoProgressBar.visibility = View.GONE
+                    viewModel.clearUploadStatus()
+                }
+            }
+        }
+
         binding.userImage.setOnClickListener {
             AlertDialog.Builder(requireContext(), R.style.MyDialogTheme)
                 .setItems(
@@ -134,13 +144,5 @@ class DashBoardFragment : Fragment() {
             name = currentUserName
         }
         photo?.let { viewModel.save(mobiUser, it, currentUser!!) }
-
-        viewModel.uploadStatus.observe(viewLifecycleOwner) {
-            if (it.isNotEmpty()) {
-                binding.root.showSnackBar("Authentication and Image Upload Successful")
-                binding.fragmentSelectPhotoProgressBar.visibility = View.GONE
-            }
-        }
-
     }
 }

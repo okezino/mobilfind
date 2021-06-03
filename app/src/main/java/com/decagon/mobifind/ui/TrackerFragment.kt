@@ -26,6 +26,7 @@ class TrackerFragment : Fragment() {
         get() = _binding!!
     private lateinit var adapter: UserAdapter
     private lateinit var recyclerView: RecyclerView
+    private  var track: Track? = null
     private val viewModel by activityViewModels<MobifindViewModel>()
 
 
@@ -56,6 +57,18 @@ class TrackerFragment : Fragment() {
             }
         }
 
+        viewModel.isTrackerDeleted.observe(viewLifecycleOwner){
+            if (it == true) {
+                track?.let { track ->
+                    view?.showSnackBar("${track.name} deleted from trackers successfully")
+                }
+            } else if (it == false) {
+                track?.let { track ->
+                    view?.showSnackBar("Unable to delete ${track.name} from trackers. Please try again")
+                }
+            }
+        }
+
         binding.fab.setOnClickListener {
             Navigation.findNavController(view).navigate(R.id.phoneContactFragment)
         }
@@ -69,12 +82,12 @@ class TrackerFragment : Fragment() {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val itemPosition = viewHolder.adapterPosition
-                val track: Track = adapter.getTrack(itemPosition)
+                track = adapter.getTrack(itemPosition)
                 AlertDialog.Builder(viewHolder.itemView.context, R.style.MyDialogTheme)
                     .setTitle("Alert")
-                    .setMessage("Are you sure you want to delete ${track.name} from your trackers list?")
+                    .setMessage("Are you sure you want to delete ${track!!.name} from your trackers list?")
                     .setPositiveButton("Yes") { _, _ ->
-                       deleteTracker(track)
+                       deleteTracker(track!!)
                     }.setNegativeButton("Cancel") { _, _ ->
                         adapter.notifyDataSetChanged()
                     }.setCancelable(false)
@@ -92,12 +105,5 @@ class TrackerFragment : Fragment() {
 
     private fun deleteTracker(track: Track) {
         viewModel.deleteFromTrackers(track.phoneNumber!!)
-        viewModel.isTrackerDeleted.observe(viewLifecycleOwner){
-            if (it == true) {
-                view?.showSnackBar("${track.name} deleted from trackers successfully")
-            } else if (it == false) {
-                view?.showSnackBar("Unable to delete ${track.name} from trackers. Please try again")
-            }
-        }
     }
 }
