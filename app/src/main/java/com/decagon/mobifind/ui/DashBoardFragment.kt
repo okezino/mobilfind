@@ -34,6 +34,7 @@ class DashBoardFragment : Fragment() {
     private var photo: Photo? = null
     private var photoUri: String? = null
     private var currentUser: FirebaseUser? = null
+    private var currentUserName: String? = null
     private val viewModel by activityViewModels<MobifindViewModel>()
 
     override fun onCreateView(
@@ -41,6 +42,7 @@ class DashBoardFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
          viewModel.getPhotoInPhotos()
+         viewModel.getCurrentUserName()
         _binding = FragmentDashBoardBinding.inflate(layoutInflater)
         return binding.root
     }
@@ -64,6 +66,10 @@ class DashBoardFragment : Fragment() {
                 binding.userImage.load(it)
                 photoUri = it
             }
+        }
+
+        viewModel.currentUserName.observe(viewLifecycleOwner) {
+            currentUserName = it
         }
 
         binding.userImage.setOnClickListener {
@@ -121,13 +127,11 @@ class DashBoardFragment : Fragment() {
 
     private fun uploadPhoto() {
         binding.fragmentSelectPhotoProgressBar.visibility = View.VISIBLE
-        if (currentUser == null) {
-            binding.fragmentSelectPhotoProgressBar.visibility = View.GONE
-            return
-        }
+        if (currentUser == null) { return }
 
         val mobiUser = MobifindUser().apply {
             phoneNumber = currentUser!!.phoneNumber.toString()
+            name = currentUserName
         }
         photo?.let { viewModel.save(mobiUser, it, currentUser!!) }
 
