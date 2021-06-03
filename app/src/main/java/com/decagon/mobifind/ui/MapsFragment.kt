@@ -106,7 +106,7 @@ class MapsFragment : Fragment() {
 
             if (currentLatLng != null) {
                 if (address != null) {
-                    placeMarkerOnMap(currentLatLng, address, it.name ?: "Mobifind User", it.photoUri ?: "")
+                    placeMarkerOnMap(currentLatLng, address, it.name ?: "Mobifind User", it.photoUri ?: "https://st3.depositphotos.com/9998432/13335/v/600/depositphotos_133352154-stock-illustration-default-placeholder-profile-icon.jpg")
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12f))
                 }
             }
