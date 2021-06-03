@@ -27,6 +27,9 @@ class MobifindViewModel : ViewModel() {
     private val _isTrackerDeleted = MutableLiveData<Boolean>()
     val isTrackerDeleted = _isTrackerDeleted as LiveData<Boolean>
 
+    private val _currentUserName = MutableLiveData<String>()
+    val currentUserName = _currentUserName as LiveData<String>
+
     private var _userLocation = MutableLiveData<UserLocation>()
     val userLocation : LiveData<UserLocation>
     get() = _userLocation
@@ -162,10 +165,8 @@ class MobifindViewModel : ViewModel() {
                 mobiUser.photoUri = photo.remoteUri
 
                 setPhotoInDetails(photo.remoteUri)
-
             }
     }
-
 
     private fun setPhotoInDetails(photoUri : String){
         documentReference.collection("details")
@@ -195,6 +196,21 @@ class MobifindViewModel : ViewModel() {
 
        return response
 
+    }
+
+    fun getCurrentUserName() {
+        documentReference.collection("details")
+            .document(phoneNumber).get().addOnSuccessListener {
+                val user = it.data!!
+                for (i in user.keys) {
+                    if (i == "name") {
+                        user[i]?.let {
+                            _currentUserName.value = it.toString()
+                            return@addOnSuccessListener
+                        }
+                    }
+                }
+            }
     }
 
     fun getPhotoInPhotos() {
