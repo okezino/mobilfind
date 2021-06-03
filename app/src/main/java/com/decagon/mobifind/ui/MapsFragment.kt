@@ -11,20 +11,21 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.navArgs
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.InfoWindowAdapter
+import com.decagon.mobifind.model.data.Track
 import com.decagon.mobifind.utils.LOCATION_PERMISSION_REQUEST_CODE
 import com.decagon.mobifind.viewModel.MapViewModel
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 
 class MapsFragment : Fragment() {
     private lateinit var map: GoogleMap
     private lateinit var mapViewModel: MapViewModel
+    private val mapsArgs by navArgs<MapsFragmentArgs>()
+    private lateinit var tracking : Track
 
 
     private val callback = OnMapReadyCallback { googleMap ->
@@ -56,6 +57,7 @@ class MapsFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mapViewModel = ViewModelProvider(requireActivity())[MapViewModel::class.java]
+        tracking = mapsArgs.tracking
 
     }
 
@@ -87,7 +89,7 @@ class MapsFragment : Fragment() {
             return
         }
         map.isMyLocationEnabled = true
-        mapViewModel.getMapDetails("+2348090539526")
+        tracking.phoneNumber?.let { mapViewModel.getMapDetails(it) }
         mapViewModel.details.observe(viewLifecycleOwner, {
             val currentLatLng = it.latitude?.let { it1 ->
                 it.longitude?.let { it2 ->

@@ -36,7 +36,8 @@ class TrackingFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = UserAdapter(UserAdapter.ClickListener{
-            findNavController().navigate(R.id.mapsFragment)
+            val action = DashBoardFragmentDirections.actionDashBoardFragmentToMapsFragment(it)
+            findNavController().navigate(action)
         })
 
         recyclerView = binding.recyclerview
