@@ -27,6 +27,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.decagon.mobifind.MainActivity
 import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.FragmentWelcomeBinding
 import com.decagon.mobifind.model.data.MobifindUser
@@ -49,6 +50,8 @@ class WelcomeFragment : Fragment() {
     private var _binding: FragmentWelcomeBinding? = null
     private val binding
         get() = _binding!!
+
+    private lateinit var activity : MainActivity
 
     private lateinit var lastLocation: Location
     private lateinit var locationCallback: LocationCallback
@@ -75,7 +78,7 @@ class WelcomeFragment : Fragment() {
                 super.onLocationResult(p0)
                 lastLocation = p0.lastLocation
                 val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
-                val place = Geocoder(context?.applicationContext)
+                val place = Geocoder(activity)
                 val myAddress =
                     place.getFromLocation(lastLocation.latitude, lastLocation.longitude, 1)
                 val userLocation = UserLocation(currentLatLng, myAddress)
@@ -135,7 +138,7 @@ class WelcomeFragment : Fragment() {
 
     private fun logInUser(){
         val number = binding.mobileNumberEt.text.toString()
-        if (isSignedUp(number, mobifindUsers))
+        if (isSignedUp(filterNumber(number), mobifindUsers))
             signInPhoneNumberFirebaseUI(filterNumber(number))
         else {
             binding.forgotPasswordTv.showSnackBar("You need to sign up")
@@ -396,5 +399,9 @@ class WelcomeFragment : Fragment() {
         return true
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        this.activity = context as MainActivity
+    }
 
 }
