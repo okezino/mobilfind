@@ -16,6 +16,8 @@
         android:layout_width="96dp"
         android:layout_height="96dp"
         android:src="@drawable/tolulope"
+        android:paddingStart="8dp"
+        android:paddingEnd="2dp"
        />
 
     <LinearLayout
@@ -32,7 +34,9 @@
             android:ellipsize="end"
             android:textColor="#ff000000"
             android:textSize="15sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:paddingEnd="16dp"
+            android:paddingStart="2dp"/>
 
         <TextView
             android:id="@+id/phone"
@@ -41,7 +45,9 @@
             android:ellipsize="end"
             android:maxLines="7"
             android:textColor="@color/black"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:paddingEnd="16dp"
+            android:paddingStart="2dp"/>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -51,8 +51,6 @@ class WelcomeFragment : Fragment() {
     private val binding
         get() = _binding!!
 
-    private lateinit var activity : MainActivity
-
     private lateinit var lastLocation: Location
     private lateinit var locationCallback: LocationCallback
     private lateinit var locationRequest: LocationRequest
@@ -78,10 +76,7 @@ class WelcomeFragment : Fragment() {
                 super.onLocationResult(p0)
                 lastLocation = p0.lastLocation
                 val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
-                val place = Geocoder(activity)
-                val myAddress =
-                    place.getFromLocation(lastLocation.latitude, lastLocation.longitude, 1)
-                val userLocation = UserLocation(currentLatLng, myAddress)
+                val userLocation = UserLocation(currentLatLng)
                 mobifindViewModel.saveUserLocationUpdates(userLocation)
             }
         }
@@ -397,11 +392,6 @@ class WelcomeFragment : Fragment() {
             return false
         }
         return true
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        this.activity = context as MainActivity
     }
 
 }

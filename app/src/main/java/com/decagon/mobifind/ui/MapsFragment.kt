@@ -1,5 +1,6 @@
 package com.decagon.mobifind.ui
 
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
@@ -10,23 +11,30 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
+import com.decagon.mobifind.MainActivity
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.InfoWindowAdapter
 import com.decagon.mobifind.model.data.Track
 import com.decagon.mobifind.utils.LOCATION_PERMISSION_REQUEST_CODE
+import com.decagon.mobifind.utils.NetworkLiveData
+import com.decagon.mobifind.utils.showSnackBar
 import com.decagon.mobifind.viewModel.MapViewModel
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import java.util.*
 
 class MapsFragment : Fragment() {
     private lateinit var map: GoogleMap
-    private val mapViewModel by viewModels<MapViewModel>()
+    private val mapViewModel by activityViewModels<MapViewModel>()
     private val mapsArgs by navArgs<MapsFragmentArgs>()
     private lateinit var tracking: Track
+    private lateinit var activity: MainActivity
+    private var address: MutableList<Address>? = null
 
 
     private val callback = OnMapReadyCallback { googleMap ->
@@ -39,9 +47,6 @@ class MapsFragment : Fragment() {
          * install it inside the SupportMapFragment. This method will only be triggered once the
          * user has installed Google Play services and returned to the app.
          */
-        mapViewModel.details.observe(viewLifecycleOwner, {
-            Log.d("MapsFragment1", "${it.photoUri}:")
-        })
         map = googleMap
         googleMap.uiSettings.isZoomControlsEnabled = true
         Log.d("MapsFragment2", "Map Called: ")
@@ -90,33 +95,45 @@ class MapsFragment : Fragment() {
         }
         map.isMyLocationEnabled = true
         tracking.phoneNumber?.let { mapViewModel.getMapDetails(it) }
-        mapViewModel.details.observe(viewLifecycleOwner, {
-            val currentLatLng = it.latitude?.let { it1 ->
-                it.longitude?.let { it2 ->
-                    LatLng(
-                        it1,
-                        it2
-                    )
-                }
-            }
-            val address = it.latitude?.let { it1 ->
-                it.longitude?.let { it2 ->
-                    Geocoder(context?.applicationContext)
-                        .getFromLocation(it1, it2, 1)
-                }
-            }
+        NetworkLiveData.observe(activity, { connected ->
+            if (connected) {
+                mapViewModel.details.observe(activity, {
+                    val currentLatLng = it.latitude?.let { it1 ->
+                        it.longitude?.let { it2 ->
+                            LatLng(
+                                it1,
+                                it2
+                            )
+                        }
+                    }
+                    it.latitude?.let { it1 ->
+                        it.longitude?.let { it2 ->
+                            try {
+                                address = Geocoder(activity)
+                                    .getFromLocation(it1, it2, 1)
+                            } catch (ex: Exception) {
+                            }
 
-            if (currentLatLng != null) {
-                if (address != null) {
-                    placeMarkerOnMap(
-                        currentLatLng,
-                        address,
-                        it.name ?: "Mobifind User",
-                        it.photoUri
-                            ?: "https://st3.depositphotos.com/9998432/13335/v/600/depositphotos_133352154-stock-illustration-default-placeholder-profile-icon.jpg"
-                    )
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12f))
-                }
+                        }
+                    }
+
+                    if (currentLatLng != null) {
+                        if (address != null) {
+                            Log.d("MapsFragmenet", "setUpMap: $address")
+                            placeMarkerOnMap(
+                                currentLatLng,
+                                address!!,
+                                it.name ?: "Mobifind User",
+                                it.photoUri
+                                    ?: "https://st3.depositphotos.com/9998432/13335/v/600/depositphotos_133352154-stock-illustration-default-placeholder-profile-icon.jpg"
+                            )
+                            map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f))
+                        }
+                    }
+
+                })
+            } else {
+                view?.showSnackBar("No Internet Connection")
             }
         })
     }
@@ -131,7 +148,12 @@ class MapsFragment : Fragment() {
             MarkerOptions().position(location).title("${name.trim()}${photoUri.trim()}")
                 .snippet("Address: ${address[0].getAddressLine(0)}")
         map.clear()
-        map.addMarker(markerOptions).showInfoWindow()
+        map.addMarker(markerOptions)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        this.activity = context as MainActivity
     }
 
 

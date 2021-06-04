@@ -1,7 +1,6 @@
 package com.decagon.mobifind.adapter
 
 import android.app.Activity
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -34,7 +33,7 @@ class InfoWindowAdapter(context: Activity) :
         // in the layout created.
 
         val titleView = contents.findViewById<TextView>(R.id.title)
-        titleView.text = marker.title.split("https://")[0] ?: ""
+        titleView.text = marker.title.split("https://")[0]
 
         val phoneView = contents.findViewById<TextView>(R.id.phone)
         phoneView.text = marker.snippet ?: ""
