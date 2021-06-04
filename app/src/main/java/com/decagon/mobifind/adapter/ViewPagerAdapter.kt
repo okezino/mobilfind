@@ -7,8 +7,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.decagon.mobifind.ui.TrackerFragment
 import com.decagon.mobifind.ui.TrackingFragment
 
-class ViewPagerAdapter(frag: FragmentManager, lifecycle: Lifecycle) :
-    FragmentStateAdapter(frag, lifecycle) {
+class ViewPagerAdapter(frag: FragmentManager, lifecycle: Lifecycle) : FragmentStateAdapter(frag, lifecycle) {
 
     override fun getItemCount(): Int = 2
 

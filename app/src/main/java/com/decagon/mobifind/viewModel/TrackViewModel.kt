@@ -1,6 +1,5 @@
 package com.decagon.mobifind.viewModel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.decagon.mobifind.model.data.MobifindUser
@@ -8,9 +7,7 @@ import com.decagon.mobifind.model.data.MobifindUser
 
 class TrackViewModel : ViewModel() {
     private val _tracking = MutableLiveData<List<MobifindUser>>(emptyList())
-    val tracking = _tracking as LiveData<List<MobifindUser>>
     private val _trackers = MutableLiveData<List<MobifindUser>>(emptyList())
-    val trackers = _tracking as LiveData<List<MobifindUser>>
 
 
     fun addUsers() {

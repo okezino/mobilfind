@@ -1,12 +1,10 @@
 package com.decagon.mobifind.viewModel
 
-import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.decagon.mobifind.MainActivity
 import com.decagon.mobifind.model.data.*
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.DocumentReference
@@ -14,14 +12,13 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.storage.FirebaseStorage
 import com.decagon.mobifind.model.data.TrackState.*
-import kotlinx.coroutines.delay
 
 class MobifindViewModel : ViewModel() {
-    private var firestore : FirebaseFirestore = FirebaseFirestore.getInstance()
-    private lateinit var documentReference : DocumentReference
-    private lateinit var userDocumentReference : DocumentReference
+    private var firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private lateinit var documentReference: DocumentReference
+    private lateinit var userDocumentReference: DocumentReference
     private var storageReference = FirebaseStorage.getInstance().reference
-    lateinit var phoneNumber : String
+    lateinit var phoneNumber: String
     private lateinit var firebaseUser: FirebaseUser
 
     private val _isTrackerDeleted = MutableLiveData<Boolean>()
@@ -31,40 +28,25 @@ class MobifindViewModel : ViewModel() {
     val currentUserName = _currentUserName as LiveData<String>
 
     private var _userLocation = MutableLiveData<UserLocation>()
-    val userLocation : LiveData<UserLocation>
-    get() = _userLocation
+    val userLoc = _userLocation as LiveData<UserLocation>
 
     private var _uploadStatus = MutableLiveData<String>()
-    val uploadStatus : LiveData<String>
+    val uploadStatus: LiveData<String>
         get() = _uploadStatus
 
     private var _mobifindUsers = MutableLiveData<ArrayList<String>>()
-    val mobifindUser : LiveData<ArrayList<String>>
+    val mobifindUser: LiveData<ArrayList<String>>
         get() = _mobifindUsers
 
     private var _photoUri = MutableLiveData<String?>()
-    val photoUri : LiveData<String?>
+    val photoUri: LiveData<String?>
         get() = _photoUri
 
-    private var _trackerPhotoUri = MutableLiveData<String?>()
-    val trackerPhotoUri : LiveData<String?>
-        get() = _trackerPhotoUri
-
-    private var _trackers = MutableLiveData<ArrayList<String>>()
-    val trackers : LiveData<ArrayList<String>>
-        get() = _trackers
-
     private var _response = MutableLiveData<Boolean>()
-    val response : LiveData<Boolean>
-        get() = _response
-
-    private var _contactList = MutableLiveData<ArrayList<Contact>>()
-    val contactList : LiveData<ArrayList<Contact>>
-        get() = _contactList
 
     private var _isSignedUpSuccess = MutableLiveData<Boolean>()
-    val isSignedUp : LiveData<Boolean>
-    get() = _isSignedUpSuccess
+    val isSignedUp: LiveData<Boolean>
+        get() = _isSignedUpSuccess
 
     private val _tracking = MutableLiveData<List<Track>>(emptyList())
     val tracking = _tracking as LiveData<List<Track>>
@@ -72,34 +54,38 @@ class MobifindViewModel : ViewModel() {
     private val _myTrackers = MutableLiveData<List<Track>>(emptyList())
     val myTrackers = _myTrackers as LiveData<List<Track>>
 
+    private val _getPhoto = MutableLiveData<String>()
+    val getPhoto = _getPhoto as LiveData<String>
+
+
     init {
         firestore.firestoreSettings = FirebaseFirestoreSettings.Builder().build()
     }
 
-    fun setUpFirebaseUser(user : FirebaseUser){
+    fun setUpFirebaseUser(user: FirebaseUser) {
         firebaseUser = user
         phoneNumber = firebaseUser.phoneNumber!!
         documentReference = firestore.collection("mobifindUsers")
             .document(phoneNumber)
     }
 
-    fun setUpUserFirebase(phoneNumber : String){
+    fun setUpUserFirebase(phoneNumber: String) {
         userDocumentReference = firestore.collection("mobifindUsers")
             .document(phoneNumber)
     }
 
-    fun saveUserLocationUpdates(userLocation: UserLocation){
+    fun saveUserLocationUpdates(userLocation: UserLocation) {
         _userLocation.value = userLocation
     }
 
 
-    fun signUpUserWithoutPhoto(mobiUser: MobifindUser){
+    fun signUpUserWithoutPhoto(mobiUser: MobifindUser) {
         documentReference.collection("details").document(phoneNumber).set(saveUser(mobiUser))
             .addOnSuccessListener {
                 _isSignedUpSuccess.value = true
             }
-            .addOnFailureListener{
-                Log.d("Firebase", "save: failed")
+            .addOnFailureListener {
+
             }
     }
 
@@ -107,20 +93,19 @@ class MobifindViewModel : ViewModel() {
     fun save(mobiUser: MobifindUser, photo: Photo, user: FirebaseUser) {
         documentReference.collection("details").document(phoneNumber).set(saveUser(mobiUser))
             .addOnSuccessListener {
-                savePhotos(mobiUser,photo,user)
+                savePhotos(mobiUser, photo, user)
             }
-            .addOnFailureListener{
-                Log.d("Firebase", "save: failed")
+            .addOnFailureListener {
+
             }
     }
 
-    private fun saveUser(mobiUser: MobifindUser) : MobifindUser{
-        documentReference.set(Track(phoneNumber= phoneNumber))
+    private fun saveUser(mobiUser: MobifindUser): MobifindUser {
+        documentReference.set(Track(phoneNumber = phoneNumber))
         mobiUser.latitude = _userLocation.value?.latLng?.latitude
         mobiUser.longitude = _userLocation.value?.latLng?.longitude
         return mobiUser
     }
-
 
 
     private fun savePhotos(
@@ -128,10 +113,10 @@ class MobifindViewModel : ViewModel() {
         photo: Photo,
         user1: FirebaseUser
     ) {
-            documentReference.collection("photos").document(phoneNumber)
+        documentReference.collection("photos").document(phoneNumber)
             .set(photo).addOnSuccessListener {
-            uploadPhotos(mobiUser,photo,user1)
-        }
+                uploadPhotos(mobiUser, photo, user1)
+            }
     }
 
     private fun uploadPhotos(
@@ -140,26 +125,26 @@ class MobifindViewModel : ViewModel() {
         user1: FirebaseUser
     ) {
         val uri = Uri.parse(photo.localUri)
-        val imageRef = storageReference.child("images/"+ user1.uid+"/"+ uri.lastPathSegment)
+        val imageRef = storageReference.child("images/" + user1.uid + "/" + uri.lastPathSegment)
         val uploadTask = imageRef.putFile(uri)
         uploadTask.addOnSuccessListener {
-            val downloadUrl =  imageRef.downloadUrl
+            val downloadUrl = imageRef.downloadUrl
             downloadUrl.addOnSuccessListener {
                 photo.remoteUri = it.toString()
                 //Update our cloud firestore with the public image URI
-                uploadPhotoDatabase(mobiUser,photo)
+                uploadPhotoDatabase(mobiUser, photo)
             }
 
         }
-        uploadTask.addOnFailureListener{
-            Log.e("Firebase", "uploadPhotos: ${it.message}", )
+        uploadTask.addOnFailureListener {
+
         }
 
 
     }
 
     private fun uploadPhotoDatabase(mobiUser: MobifindUser, photo: Photo) {
-       documentReference.collection("photos")
+        documentReference.collection("photos")
             .document(phoneNumber).set(photo).addOnSuccessListener {
                 _uploadStatus.value = photo.remoteUri
                 mobiUser.photoUri = photo.remoteUri
@@ -168,45 +153,55 @@ class MobifindViewModel : ViewModel() {
             }
     }
 
-    private fun setPhotoInDetails(photoUri : String){
+    private fun setPhotoInDetails(photoUri: String) {
         documentReference.collection("details")
-            .document(phoneNumber).update("photoUri",photoUri).addOnSuccessListener{
-                Log.d("MobifindViewmodel", "setPhotoInDetails: Photo in details")
+            .document(phoneNumber).update("photoUri", photoUri).addOnSuccessListener {
+            }
+    }
+
+    private fun getPhoto(number : String){
+        documentReference.collection("trackers")
+            .document(phoneNumber).update("photoUri", photoUri).addOnSuccessListener {
             }
     }
 
 
-
-
-    fun getTrackerPhotoInPhotos(number: String, name : String) : Boolean{
+    fun getTrackerPhotoInPhotos(number: String, name: String): Boolean {
         var response = true
         userDocumentReference.collection("photos")
             .document(number).get().addOnSuccessListener {
-                val photo = it.data!!
-                for (i in photo.keys) {
-                    if (i == "remoteUri") {
-                        val photoShot : String? = if(photo[i] != null ) photo[i].toString() else null
-                        var tracker = Track(name,number,photoShot)
-                        response = pushToTrackers(tracker)
-
-                        break
+                val photo = it.data
+                if (photo != null) {
+                    for (i in photo.keys) {
+                        if (i == "remoteUri") {
+                            val photoShot: String? = if (photo[i] != null) photo[i].toString() else null
+                            val tracker = Track(name, number, photoShot)
+                            response = pushToTrackers(tracker)
+                            break
+                        }
                     }
+                }else{
+                    val tracker = Track(name, number)
+                    response = pushToTrackers(tracker)
                 }
+
             }
 
-       return response
+        return response
 
     }
 
     fun getCurrentUserName() {
         documentReference.collection("details")
             .document(phoneNumber).get().addOnSuccessListener {
-                val user = it.data!!
-                for (i in user.keys) {
-                    if (i == "name") {
-                        user[i]?.let {
-                            _currentUserName.value = it.toString()
-                            return@addOnSuccessListener
+                val user = it.data
+                if (user != null) {
+                    for (i in user.keys) {
+                        if (i == "name") {
+                            user[i]?.let {
+                                _currentUserName.value = it.toString()
+                                return@addOnSuccessListener
+                            }
                         }
                     }
                 }
@@ -217,15 +212,16 @@ class MobifindViewModel : ViewModel() {
         documentReference.collection("photos")
             .document(phoneNumber).addSnapshotListener { value, error ->
                 if (error != null) {
-                    Log.d("Error getting photo", error.message!!)
                     return@addSnapshotListener
                 }
                 if (value != null) {
-                    val photo = value.data!!
-                    for (i in photo.keys) {
-                        if (i == "remoteUri") {
-                            _photoUri.value = photo[i].toString()
-                            return@addSnapshotListener
+                    val photo = value.data
+                    if (photo != null) {
+                        for (i in photo.keys) {
+                            if (i == "remoteUri") {
+                                _photoUri.value = photo[i].toString()
+                                return@addSnapshotListener
+                            }
                         }
                     }
                 }
@@ -245,17 +241,16 @@ class MobifindViewModel : ViewModel() {
                     val documents = value.documents
                     documents.forEach {
                         val mobifindUser = it.id
-                            //  mobifindUser.userId = it.id
-                            allMobifindUser.add(mobifindUser.toString())
-                        }
-                        _mobifindUsers.value = allMobifindUser
+                        allMobifindUser.add(mobifindUser)
                     }
+                    _mobifindUsers.value = allMobifindUser
                 }
             }
+    }
 
 
-    fun pushToTrackers(tracker : Track) : Boolean {
-        var result : Boolean = true
+    private fun pushToTrackers(tracker: Track): Boolean {
+        var result: Boolean = true
         documentReference.collection("trackers")
             .document(tracker.phoneNumber!!)
             .set(tracker).addOnSuccessListener {
@@ -264,41 +259,20 @@ class MobifindViewModel : ViewModel() {
                 _response.value = false
             }
 
-         return result
+        return result
     }
 
 
-    fun pushToTracking(photo:String?){
-        var tracker = Track("myself",phoneNumber,photo)
+    fun pushToTracking(photo: String?) {
+        var tracker = Track(currentUserName.value, phoneNumber, photo)
         userDocumentReference.collection("tracking")
             .document(phoneNumber)
             .set(tracker).addOnSuccessListener {
-                Log.d("PushTracker", "pushToTrackers: ${tracker.name} successfully added")
 
             }.addOnFailureListener {
 
             }
     }
-
-    fun readFromTrackers(){
-        documentReference.collection("trackers").addSnapshotListener { value, error ->
-                if (error != null) {
-                    Log.w("Listening", "listenToSpecimens: Listen Failed")
-                    return@addSnapshotListener
-                }
-                if (value != null) {
-                    val allMobifindUser = ArrayList<String>()
-                    val documents = value.documents
-                    documents.forEach {
-                        val mobifindUser = it.toObject(Track::class.java)
-                        //  mobifindUser.userId = it.id
-                        mobifindUser?.name?.let { it1 -> allMobifindUser.add(it1) }
-                    }
-                    _trackers.value = allMobifindUser
-                }
-            }
-            }
-
 
 
     // Method for getting trackers and tracking from database
@@ -306,7 +280,6 @@ class MobifindViewModel : ViewModel() {
         documentReference.collection(path.state)
             .addSnapshotListener { value, error ->
                 if (error != null) {
-                    Log.w("Listening", "listenToSpecimens: Listen Failed")
                     return@addSnapshotListener
                 }
                 if (value != null) {
@@ -334,7 +307,14 @@ class MobifindViewModel : ViewModel() {
             }
             .addOnFailureListener {
                 _isTrackerDeleted.value = false
-                Log.d("ERROR DELETING TRACKER", "${it.message}")
             }
     }
+
+    fun updateLocationDetails(){
+        documentReference.collection("details")
+            .document(phoneNumber).update("longitude", _userLocation.value?.latLng?.longitude, "latitude",_userLocation.value?.latLng?.latitude)
+            .addOnSuccessListener {
+            }
+    }
+
 }

@@ -47,14 +47,9 @@
     <style name="Theme.Mobifind.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="AuthenticationTheme" parent="FirebaseUI">
-    <item name="windowActionBar">false</item>
-<item name="windowNoTitle">true</item>
-<item name="colorPrimary">@color/dark_blue</item>
-<item name="colorPrimaryDark">@color/light_blue</item>
-<item name="colorAccent">@color/purple</item>
-<item name="colorControlNormal">@color/dark_blue</item>
-<item name="colorControlActivated">@color/green_100</item>
-<item name="colorControlHighlight">@color/purple</item>
+        <item name="colorPrimary">@color/tool_bar</item>
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+
     </style>
 
 

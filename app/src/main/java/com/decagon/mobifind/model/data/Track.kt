@@ -5,7 +5,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Track(
-    var name : String? = null,
-    var phoneNumber : String? = null,
-    var photoUri : String? = null
+    var name: String? = null,
+    var phoneNumber: String? = null,
+    var photoUri: String? = null
 ) : Parcelable

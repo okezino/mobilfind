@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.navArgs
 import com.decagon.mobifind.R
@@ -23,9 +24,9 @@ import com.google.android.gms.maps.model.MarkerOptions
 
 class MapsFragment : Fragment() {
     private lateinit var map: GoogleMap
-    private lateinit var mapViewModel: MapViewModel
+    private val mapViewModel by viewModels<MapViewModel>()
     private val mapsArgs by navArgs<MapsFragmentArgs>()
-    private lateinit var tracking : Track
+    private lateinit var tracking: Track
 
 
     private val callback = OnMapReadyCallback { googleMap ->
@@ -38,7 +39,7 @@ class MapsFragment : Fragment() {
          * install it inside the SupportMapFragment. This method will only be triggered once the
          * user has installed Google Play services and returned to the app.
          */
-        mapViewModel.details.observe(viewLifecycleOwner,{
+        mapViewModel.details.observe(viewLifecycleOwner, {
             Log.d("MapsFragment1", "${it.photoUri}:")
         })
         map = googleMap
@@ -56,7 +57,6 @@ class MapsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mapViewModel = ViewModelProvider(requireActivity())[MapViewModel::class.java]
         tracking = mapsArgs.tracking
 
     }
@@ -108,16 +108,28 @@ class MapsFragment : Fragment() {
 
             if (currentLatLng != null) {
                 if (address != null) {
-                    placeMarkerOnMap(currentLatLng, address, it.name ?: "Mobifind User", it.photoUri ?: "https://st3.depositphotos.com/9998432/13335/v/600/depositphotos_133352154-stock-illustration-default-placeholder-profile-icon.jpg")
+                    placeMarkerOnMap(
+                        currentLatLng,
+                        address,
+                        it.name ?: "Mobifind User",
+                        it.photoUri
+                            ?: "https://st3.depositphotos.com/9998432/13335/v/600/depositphotos_133352154-stock-illustration-default-placeholder-profile-icon.jpg"
+                    )
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 12f))
                 }
             }
         })
     }
 
-    private fun placeMarkerOnMap(location: LatLng, address: MutableList<Address>, name: String, photoUri : String) {
-        val markerOptions = MarkerOptions().position(location).title("${name.trim()}${photoUri.trim()}")
-            .snippet("Address: ${address[0].getAddressLine(0)}")
+    private fun placeMarkerOnMap(
+        location: LatLng,
+        address: MutableList<Address>,
+        name: String,
+        photoUri: String
+    ) {
+        val markerOptions =
+            MarkerOptions().position(location).title("${name.trim()}${photoUri.trim()}")
+                .snippet("Address: ${address[0].getAddressLine(0)}")
         map.addMarker(markerOptions).showInfoWindow()
     }
 

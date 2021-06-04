@@ -1,39 +1,28 @@
 package com.decagon.mobifind.ui
 
 import android.Manifest
-import android.app.AlertDialog
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.ContactsContract
-import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.OnclickPhoneContact
 import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.databinding.FragmentPhoneContactBinding
 import com.decagon.mobifind.model.data.Contact
-import com.decagon.mobifind.model.data.Track
 import com.decagon.mobifind.utils.*
 import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 
-class PhoneContactFragment : Fragment(), OnclickPhoneContact,EasyPermissions.PermissionCallbacks {
+class PhoneContactFragment : Fragment(), OnclickPhoneContact, EasyPermissions.PermissionCallbacks {
 
     private var _binding: FragmentPhoneContactBinding? = null
     private val binding
@@ -55,13 +44,10 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact,EasyPermissions.Per
     }
 
 
-
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding.phoneContactBackBtn.setOnClickListener {
-            findNavController().navigate(R.id.dashBoardFragment)
+            findNavController().popBackStack()
         }
 
         recyclerView = binding.recyclerviewPhoneFragment
@@ -77,11 +63,6 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact,EasyPermissions.Per
     }
 
 
-
-
-
-
-
     override fun onClickStatus(name: String, number: String) {
         val userNumber = filterNumber(number)
 
@@ -89,12 +70,12 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact,EasyPermissions.Per
             if (it.contains(userNumber)) {
                 viewModel.setUpUserFirebase(userNumber)
 
-                 if(viewModel.getTrackerPhotoInPhotos(userNumber,name)){
-                     view?.showSnackBar("$name has been successfully added to Tracker List")
-                     findNavController().navigate(R.id.dashBoardFragment)
-                 }else {
-                     view?.showSnackBar("Failed Operation: Try again")
-                 }
+                if (viewModel.getTrackerPhotoInPhotos(userNumber, name)) {
+                    view?.showSnackBar("$name has been successfully added to Tracker List")
+                    findNavController().popBackStack()
+                } else {
+                    view?.showSnackBar("Failed Operation: Try again")
+                }
 
                 viewModel.pushToTracking(photo)
 
@@ -104,12 +85,6 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact,EasyPermissions.Per
             }
         })
     }
-
-
-
-
-
-
 
 
     private fun sendMessage(number: String, name: String) {
@@ -126,33 +101,37 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact,EasyPermissions.Per
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        EasyPermissions.onRequestPermissionsResult(requestCode,permissions,grantResults,this)
+        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
 
     }
 
 
-    fun hasContactPermission() = EasyPermissions.hasPermissions(requireContext(),Manifest.permission.READ_CONTACTS)
-    fun requestPermission(){
-        EasyPermissions.requestPermissions(this,
+    private fun hasContactPermission() =
+        EasyPermissions.hasPermissions(requireContext(), Manifest.permission.READ_CONTACTS)
+
+    private fun requestPermission() {
+        EasyPermissions.requestPermissions(
+            this,
             "You can not update your Tracker List without Contact Permission",
-            REQUEST_READ_CONTACT,Manifest.permission.READ_CONTACTS)
+            REQUEST_READ_CONTACT, Manifest.permission.READ_CONTACTS
+        )
     }
 
     override fun onPermissionsDenied(requestCode: Int, perms: List<String>) {
-        if(EasyPermissions.somePermissionDenied(this,perms.first())){
+        if (EasyPermissions.somePermissionDenied(this, perms.first())) {
             SettingsDialog.Builder(requireContext()).build().show()
-        }else requestPermission()
+        } else requestPermission()
     }
 
     override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {
-        if(hasContactPermission()) getContact() else view?.showSnackBar("Deny")
+        if (hasContactPermission()) getContact() else view?.showSnackBar("Deny")
 
     }
 
 
     private fun getContact() {
 
-        if(hasContactPermission()){
+        if (hasContactPermission()) {
 
             val contact = requireActivity().contentResolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null

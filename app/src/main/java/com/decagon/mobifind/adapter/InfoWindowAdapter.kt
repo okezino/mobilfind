@@ -22,7 +22,8 @@ class InfoWindowAdapter(context: Activity) :
     // Inflate the content of the map's info window with the
     // custom layout defined
     private val contents: View = context.layoutInflater.inflate(
-        R.layout.marker_layout, null)
+        R.layout.marker_layout, null
+    )
 
 
     override fun getInfoWindow(marker: Marker): View? {
@@ -39,7 +40,6 @@ class InfoWindowAdapter(context: Activity) :
         phoneView.text = marker.snippet ?: ""
         val userImage = contents.findViewById<ImageView>(R.id.profile_image)
         val photoUri = "https://${marker.title.split("https://")[1]}"
-        Log.d("InfoWindowAdapter", "getInfoContents: $photoUri")
 
         Picasso.with(userImage.context)
             .load(photoUri)
@@ -54,7 +54,7 @@ class InfoWindowAdapter(context: Activity) :
                 }
 
                 override fun onError() {
-                    Log.d("InfoWindow", "onError: An error occured")
+
                 }
             })
         return contents
@@ -65,7 +65,6 @@ class InfoWindowAdapter(context: Activity) :
     // in the layout created.
     override fun getInfoContents(marker: Marker): View? {
         return null
-
     }
 }
 

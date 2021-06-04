@@ -4,11 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.UserAdapter
 import com.decagon.mobifind.databinding.FragmentTrackingBinding
 import com.decagon.mobifind.model.data.TrackState
@@ -23,19 +23,35 @@ class TrackingFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private val viewModel by activityViewModels<MobifindViewModel>()
 
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (shouldInterceptBackPress()) {
+                    activity?.moveTaskToBack(true)
+                } else {
+                    isEnabled = false
+                    activity?.onBackPressed()
+                }
+            }
+        })
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         viewModel.getTrackList(TrackState.TRACKING)
-       _binding = FragmentTrackingBinding.inflate(layoutInflater)
+        _binding = FragmentTrackingBinding.inflate(layoutInflater)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = UserAdapter(UserAdapter.ClickListener{
+        adapter = UserAdapter(UserAdapter.ClickListener {
             val action = DashBoardFragmentDirections.actionDashBoardFragmentToMapsFragment(it)
             findNavController().navigate(action)
         })
@@ -60,4 +76,6 @@ class TrackingFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
+    fun shouldInterceptBackPress() = true
 }

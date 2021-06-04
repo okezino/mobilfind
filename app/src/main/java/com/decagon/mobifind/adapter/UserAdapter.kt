@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.decagon.mobifind.databinding.DashBoardRecyclerviewItemBinding
-import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Track
 import com.decagon.mobifind.utils.load
 
@@ -13,7 +12,7 @@ class UserAdapter(private val clickListener: ClickListener? = null) :
 
     private var users = mutableListOf<Track>()
 
-    inner class UserViewHolder(val binding: DashBoardRecyclerviewItemBinding) :
+    inner class UserViewHolder(private val binding: DashBoardRecyclerviewItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(user: Track) {
             clickListener?.let { clickListener ->
@@ -23,6 +22,7 @@ class UserAdapter(private val clickListener: ClickListener? = null) :
             }
             binding.fullName.text = user.name
             binding.phoneNumber.text = user.phoneNumber
+
             user.photoUri?.let {
                 binding.profileImage.load(it)
             }
