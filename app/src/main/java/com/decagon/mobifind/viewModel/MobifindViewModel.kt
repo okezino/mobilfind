@@ -54,10 +54,6 @@ class MobifindViewModel : ViewModel() {
     private val _myTrackers = MutableLiveData<List<Track>>(emptyList())
     val myTrackers = _myTrackers as LiveData<List<Track>>
 
-    private val _getPhoto = MutableLiveData<String>()
-    val getPhoto = _getPhoto as LiveData<String>
-
-
     init {
         firestore.firestoreSettings = FirebaseFirestoreSettings.Builder().build()
     }
