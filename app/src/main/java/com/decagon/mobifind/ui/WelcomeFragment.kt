@@ -370,10 +370,12 @@ class WelcomeFragment : Fragment() {
         photo?.let { mobifindViewModel.save(mobiUser, it, user!!) }
 
         mobifindViewModel.uploadStatus.observe(viewLifecycleOwner, {
-            if (it.isNotEmpty()) {
-                binding.fragmentWelcomeProgress.visibility = View.GONE
-                binding.fragmentWelcomeProgress.showSnackBar("Authentication and Image Upload Successful")
-                findNavController().navigate(R.id.dashBoardFragment)
+            if (it != null) {
+                if (it.isNotEmpty()) {
+                    binding.fragmentWelcomeProgress.visibility = View.GONE
+                    binding.fragmentWelcomeProgress.showSnackBar("Authentication and Image Upload Successful")
+                    findNavController().navigate(R.id.dashBoardFragment)
+                }
             }
         })
     }

@@ -30,8 +30,8 @@ class MobifindViewModel : ViewModel() {
     private var _userLocation = MutableLiveData<UserLocation>()
     val userLoc = _userLocation as LiveData<UserLocation>
 
-    private var _uploadStatus = MutableLiveData<String>()
-    val uploadStatus: LiveData<String>
+    private var _uploadStatus = MutableLiveData<String?>(null)
+    val uploadStatus : LiveData<String?>
         get() = _uploadStatus
 
     private var _mobifindUsers = MutableLiveData<ArrayList<String>>()
@@ -103,7 +103,6 @@ class MobifindViewModel : ViewModel() {
         return mobiUser
     }
 
-
     private fun savePhotos(
         mobiUser: MobifindUser,
         photo: Photo,
@@ -140,13 +139,15 @@ class MobifindViewModel : ViewModel() {
     }
 
     private fun uploadPhotoDatabase(mobiUser: MobifindUser, photo: Photo) {
-        documentReference.collection("photos")
+        clearUploadStatus()
+       documentReference.collection("photos")
             .document(phoneNumber).set(photo).addOnSuccessListener {
                 _uploadStatus.value = photo.remoteUri
                 mobiUser.photoUri = photo.remoteUri
 
                 setPhotoInDetails(photo.remoteUri)
             }
+        clearUploadStatus()
     }
 
     private fun setPhotoInDetails(photoUri: String) {
@@ -155,12 +156,10 @@ class MobifindViewModel : ViewModel() {
             }
     }
 
-    private fun getPhoto(number : String){
-        documentReference.collection("trackers")
-            .document(phoneNumber).update("photoUri", photoUri).addOnSuccessListener {
-            }
-    }
 
+    fun clearUploadStatus() {
+        _uploadStatus.value = null
+    }
 
     fun getTrackerPhotoInPhotos(number: String, name: String): Boolean {
         var response = true
