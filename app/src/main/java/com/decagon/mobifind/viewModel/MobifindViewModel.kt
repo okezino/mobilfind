@@ -164,26 +164,18 @@ class MobifindViewModel : ViewModel() {
     fun getTrackerPhotoInPhotos(number: String, name: String): Boolean {
         var response = true
         userDocumentReference.collection("photos")
-            .document(number).get().addOnSuccessListener {
-                val photo = it.data
+            .document(number).addSnapshotListener { value, error ->
+                val photo = value?.data
                 if (photo != null) {
-                    for (i in photo.keys) {
-                        if (i == "remoteUri") {
-                            val photoShot: String? = if (photo[i] != null) photo[i].toString() else null
+                            val photoShot: String? = if (photo["remoteUri"] != null) photo["remoteUri"].toString() else null
                             val tracker = Track(name, number, photoShot)
                             response = pushToTrackers(tracker)
-                            break
-                        }
-                    }
-                }else{
+                        } else{
                     val tracker = Track(name, number)
                     response = pushToTrackers(tracker)
                 }
-
             }
-
         return response
-
     }
 
     fun getCurrentUserName() {

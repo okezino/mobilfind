@@ -2,33 +2,38 @@ package com.decagon.mobifind.ui
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.decagon.mobifind.adapter.OnclickPhoneContact
 import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.databinding.FragmentPhoneContactBinding
-import com.decagon.mobifind.model.data.Contact
 import com.decagon.mobifind.utils.*
 import com.decagon.mobifind.viewModel.MobifindViewModel
-import com.vmadalin.easypermissions.EasyPermissions
-import com.vmadalin.easypermissions.dialogs.SettingsDialog
 
-class PhoneContactFragment : Fragment(), OnclickPhoneContact, EasyPermissions.PermissionCallbacks {
 
+class PhoneContactFragment : Fragment(), OnclickPhoneContact {
+    // EasyPermissions.PermissionCallbacks
     private var _binding: FragmentPhoneContactBinding? = null
     private val binding
         get() = _binding!!
     private lateinit var adapter: PhoneContactAdapter
-    private var contactList = arrayListOf<Contact>()
+    private var contactList = arrayListOf<String>()
     private lateinit var recyclerView: RecyclerView
     private var photo: String? = null
     private val viewModel by activityViewModels<MobifindViewModel>()
@@ -43,6 +48,24 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact, EasyPermissions.Pe
         return binding.root
     }
 
+    // Checks if the permission to read the phone's contact has been granted to the app. If the
+    // permission has been granted, read the contact else, request for the appropriate permission.
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.READ_CONTACTS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(
+                arrayOf(Manifest.permission.READ_CONTACTS),
+                1
+            )
+        } else {
+            handlePermission()
+        }
+    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -52,14 +75,40 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact, EasyPermissions.Pe
 
         recyclerView = binding.recyclerviewPhoneFragment
 
-
-        if (!hasContactPermission()) requestPermission() else getContact()
-
-
         viewModel.getPhotoInPhotos()
         viewModel.photoUri.observe(viewLifecycleOwner, Observer {
             photo = it
         })
+
+        binding.searchBar.addTextChangedListener(object : TextWatcher{
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+               handleTextChange(searchContact(s.toString(),contactList))
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                handleTextChange(searchContact(s.toString(),contactList))
+            }
+
+        })
+    }
+
+    // This is used to read phone contacts and save them in a mutableList
+    private fun getPhoneContact() {
+        val cursor: Cursor? = requireActivity().contentResolver.query(
+            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+            null, null, null, null)
+
+        while (cursor!!.moveToNext()) {
+            val name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
+            val number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+            contactList.add("$name:$number")
+        }
+
+        cursor.close()
     }
 
 
@@ -71,10 +120,10 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact, EasyPermissions.Pe
                 viewModel.setUpUserFirebase(userNumber)
 
                 if (viewModel.getTrackerPhotoInPhotos(userNumber, name)) {
-                    view?.showSnackBar("$name has been successfully added to Tracker List")
+                    view?.showSnackBar(sendSuccessMessage(name))
                     findNavController().popBackStack()
                 } else {
-                    view?.showSnackBar("Failed Operation: Try again")
+                    view?.showSnackBar(failedMessage())
                 }
 
                 viewModel.pushToTracking(photo)
@@ -86,6 +135,20 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact, EasyPermissions.Pe
         })
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == 1) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                handlePermission()
+            } else {
+                view?.showSnackBar(denyMessage())
+            }
+        }
+    }
+
 
     private fun sendMessage(number: String, name: String) {
         val uri = Uri.parse("smsto:$number")
@@ -94,63 +157,17 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact, EasyPermissions.Pe
         startActivity(intent)
     }
 
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
-
+    private fun handlePermission() {
+        getPhoneContact()
+        recyclerView = binding.recyclerviewPhoneFragment
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = PhoneContactAdapter(this,contactList.toList())
     }
 
-
-    private fun hasContactPermission() =
-        EasyPermissions.hasPermissions(requireContext(), Manifest.permission.READ_CONTACTS)
-
-    private fun requestPermission() {
-        EasyPermissions.requestPermissions(
-            this,
-            "You can not update your Tracker List without Contact Permission",
-            REQUEST_READ_CONTACT, Manifest.permission.READ_CONTACTS
-        )
-    }
-
-    override fun onPermissionsDenied(requestCode: Int, perms: List<String>) {
-        if (EasyPermissions.somePermissionDenied(this, perms.first())) {
-            SettingsDialog.Builder(requireContext()).build().show()
-        } else requestPermission()
-    }
-
-    override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {
-        if (hasContactPermission()) getContact() else view?.showSnackBar("Deny")
-
-    }
-
-
-    private fun getContact() {
-
-        if (hasContactPermission()) {
-
-            val contact = requireActivity().contentResolver.query(
-                ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null
-            )
-            while (contact!!.moveToNext()) {
-                val name =
-                    contact.getString(contact.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
-                val number =
-                    contact.getString(contact.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
-
-                val newNumber = Contact(name, number)
-                contactList.add(newNumber)
-
-            }
-
-            adapter = PhoneContactAdapter(this, contactList)
-            recyclerView.adapter = adapter
-            initPhoneAdapter(adapter, recyclerView)
-        }
+    private fun handleTextChange( contact : List<String>) {
+        recyclerView = binding.recyclerviewPhoneFragment
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = PhoneContactAdapter(this,contact)
     }
 
 

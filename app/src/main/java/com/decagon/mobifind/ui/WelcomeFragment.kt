@@ -135,7 +135,7 @@ class WelcomeFragment : Fragment() {
 
     private fun logInUser(){
         val number = binding.mobileNumberEt.text.toString()
-        if (isSignedUp(number, mobifindUsers))
+        if (isSignedUp(filterNumber(number), mobifindUsers))
             signInPhoneNumberFirebaseUI(filterNumber(number))
         else {
             binding.forgotPasswordTv.showSnackBar("You need to sign up")
