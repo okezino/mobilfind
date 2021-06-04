@@ -41,7 +41,7 @@ class TrackerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        adapter = UserAdapter(UserAdapter.ClickListener{})
+        adapter = UserAdapter(UserAdapter.ClickListener {})
         recyclerView = binding.recyclerview
         initAdapter(adapter, recyclerView)
 
@@ -87,6 +87,7 @@ class TrackerFragment : Fragment() {
                     .setTitle("Alert")
                     .setMessage("Are you sure you want to delete ${track!!.name} from your trackers list?")
                     .setPositiveButton("Yes") { _, _ ->
+
                        deleteTracker(track!!)
                     }.setNegativeButton("Cancel") { _, _ ->
                         adapter.notifyDataSetChanged()
@@ -105,5 +106,14 @@ class TrackerFragment : Fragment() {
 
     private fun deleteTracker(track: Track) {
         viewModel.deleteFromTrackers(track.phoneNumber!!)
+        viewModel.isTrackerDeleted.observe(viewLifecycleOwner) {
+            if (it == true) {
+                view?.showSnackBar("${track.name} deleted from trackers successfully")
+            } else if (it == false) {
+                view?.showSnackBar("Unable to delete ${track.name} from trackers. Please try again")
+            }
+        }
     }
+
+
 }

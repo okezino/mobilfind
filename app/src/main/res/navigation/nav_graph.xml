@@ -10,25 +10,7 @@
         android:name="com.decagon.mobifind.ui.WelcomeFragment"
         android:label="WelcomeFragment"
         tools:layout="@layout/fragment_welcome"
-        >
-        <action
-            android:id="@+id/action_welcomeFragment_to_verificationFragment"
-            app:destination="@id/verificationFragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/profileFragment"
-        android:name="com.decagon.mobifind.ui.ProfileFragment"
-        android:label="profile_fragment"
-        tools:layout="@layout/profile_fragment" />
-    <fragment
-        android:id="@+id/verificationFragment"
-        android:name="com.decagon.mobifind.ui.VerificationFragment"
-        android:label="verification_fragment"
-        tools:layout="@layout/verification_fragment" >
-        <argument
-            android:name="phoneNumber"
-            app:argType="string" />
-    </fragment>
+        />
     <fragment
         android:id="@+id/dashBoardFragment"
         android:name="com.decagon.mobifind.ui.DashBoardFragment"
@@ -37,12 +19,19 @@
         <action
             android:id="@+id/action_dashBoardFragment_to_photoViewFragment"
             app:destination="@id/photoViewFragment" />
+        <action
+            android:id="@+id/action_dashBoardFragment_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
     </fragment>
     <fragment
         android:id="@+id/mapsFragment"
         android:name="com.decagon.mobifind.ui.MapsFragment"
         android:label="fragment_maps"
-        tools:layout="@layout/fragment_maps" />
+        tools:layout="@layout/fragment_maps" >
+        <argument
+            android:name="tracking"
+            app:argType="com.decagon.mobifind.model.data.Track" />
+    </fragment>
     <fragment
         android:id="@+id/phoneContactFragment"
         android:name="com.decagon.mobifind.ui.PhoneContactFragment"

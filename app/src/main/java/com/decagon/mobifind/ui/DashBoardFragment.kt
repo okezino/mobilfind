@@ -40,9 +40,9 @@ class DashBoardFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-         viewModel.getPhotoInPhotos()
-         viewModel.getCurrentUserName()
+    ): View {
+        viewModel.getPhotoInPhotos()
+        viewModel.getCurrentUserName()
         _binding = FragmentDashBoardBinding.inflate(layoutInflater)
         return binding.root
     }
@@ -51,6 +51,9 @@ class DashBoardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         currentUser = FirebaseAuth.getInstance().currentUser
+        viewModel.userLoc.observe(requireActivity(),{
+            viewModel.updateLocationDetails()
+        })
 
         // Sign user out of the app
         binding.logout.setOnClickListener {
@@ -102,13 +105,13 @@ class DashBoardFragment : Fragment() {
                 .setNegativeButton("CANCEL") { _, _ -> }
                 .create()
                 .show()
-             }
+        }
 
         val viewPagerAdapter = ViewPagerAdapter(childFragmentManager, lifecycle)
         binding.viewPager.adapter = viewPagerAdapter
 
         TabLayoutMediator(binding.tabView, binding.viewPager) { tabs, position ->
-            tabs.text = if (position == 0) "Tracking" else  "Trackers"
+            tabs.text = if (position == 0) "Tracking" else "Trackers"
         }.attach()
 
     }
@@ -118,7 +121,7 @@ class DashBoardFragment : Fragment() {
         _binding = null
     }
 
-    private fun prepOpenImageGallery(){
+    private fun prepOpenImageGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
         intent.type = "image/*"
         startActivityForResult(intent, PICK_IMAGE)
@@ -137,7 +140,9 @@ class DashBoardFragment : Fragment() {
 
     private fun uploadPhoto() {
         binding.fragmentSelectPhotoProgressBar.visibility = View.VISIBLE
-        if (currentUser == null) { return }
+        if (currentUser == null) {
+            return
+        }
 
         val mobiUser = MobifindUser().apply {
             phoneNumber = currentUser!!.phoneNumber.toString()

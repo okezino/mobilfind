@@ -24,6 +24,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.decagon.mobifind.R
@@ -53,29 +54,31 @@ class WelcomeFragment : Fragment() {
     private lateinit var locationCallback: LocationCallback
     private lateinit var locationRequest: LocationRequest
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var mobifindViewModel: MobifindViewModel
+    private val mobifindViewModel by activityViewModels<MobifindViewModel>()
     private lateinit var alertDialog: AlertDialog
     private lateinit var displayPhotoIv: ImageView
+    private var mobifindUsers = arrayListOf<String>()
 
     private var imageUri: Uri? = null
     private var photo: Photo? = null
     private var user: FirebaseUser? = null
+    private lateinit var logInNumber: String
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mobifindViewModel = ViewModelProvider(requireActivity())[MobifindViewModel::class.java]
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         // Receives updates when device location changes
+
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
                 super.onLocationResult(p0)
                 lastLocation = p0.lastLocation
                 val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
                 val place = Geocoder(context?.applicationContext)
-                val myAaddress =
+                val myAddress =
                     place.getFromLocation(lastLocation.latitude, lastLocation.longitude, 1)
-                val userLocation = UserLocation(currentLatLng, myAaddress)
+                val userLocation = UserLocation(currentLatLng, myAddress)
                 mobifindViewModel.saveUserLocationUpdates(userLocation)
             }
         }
@@ -87,12 +90,14 @@ class WelcomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         if (FirebaseAuth.getInstance().currentUser != null) {
             user = FirebaseAuth.getInstance().currentUser
             mobifindViewModel.setUpFirebaseUser(user!!)
             findNavController().navigate(R.id.dashBoardFragment)
 
         }
+
         _binding = FragmentWelcomeBinding.inflate(layoutInflater)
         return binding.root
     }
@@ -103,13 +108,15 @@ class WelcomeFragment : Fragment() {
 
         mobifindViewModel.getAllMobifindUsers()
         mobifindViewModel.mobifindUser.observe(requireActivity(), {
-            Log.d("MobifindUsers", "onCreate: $it")
+            Log.d("Mobifindders", "onViewCreated: $it")
+            mobifindUsers = it
         })
 
         /**
          * Signs up a new user with their phoneNumber
          */
         binding.signupBtn.setOnClickListener {
+            if(requestPermission(SIGN_UP_FIREBASE))
             signUpPhoneNumberFirebaseUI()
         }
 
@@ -117,10 +124,22 @@ class WelcomeFragment : Fragment() {
          * An alternative login route
          */
         binding.loginBtn.setOnClickListener {
-            val number = binding.mobileNumberEt.text.toString()
+            Log.d("MobifindUserss", "onViewCreated: $mobifindUsers")
 
+            if (requestPermission(LOG_IN_FIREBASE)){
+                logInUser()
+            }
+
+        }
+    }
+
+    private fun logInUser(){
+        val number = binding.mobileNumberEt.text.toString()
+        if (isSignedUp(number, mobifindUsers))
             signInPhoneNumberFirebaseUI(filterNumber(number))
-
+        else {
+            binding.forgotPasswordTv.showSnackBar("You need to sign up")
+            binding.mobileNumberEt.text?.clear()
         }
     }
 
@@ -130,6 +149,7 @@ class WelcomeFragment : Fragment() {
     }
 
     private fun signInPhoneNumberFirebaseUI(number: String) {
+        logInNumber = number
         binding.fragmentWelcomeProgress.visibility = View.VISIBLE
         val providers = arrayListOf(
             AuthUI.IdpConfig.PhoneBuilder().setDefaultNumber(number).build(),
@@ -152,6 +172,7 @@ class WelcomeFragment : Fragment() {
             AuthUI.getInstance()
                 .createSignInIntentBuilder()
                 .setAvailableProviders(providers)
+                .setTheme(R.style.AuthenticationTheme)
                 .build(),
             AUTH_SIGN_IN
         )
@@ -172,7 +193,6 @@ class WelcomeFragment : Fragment() {
                     user = FirebaseAuth.getInstance().currentUser
                     mobifindViewModel.setUpFirebaseUser(user!!)
                     findNavController().navigate(R.id.dashBoardFragment)
-
                 }
                 LOCATION_UPDATE_STATE -> {
                     startLocationUpdates()
@@ -299,11 +319,29 @@ class WelcomeFragment : Fragment() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == GET_LOCATION_UPDATE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startLocationUpdates()
-            } else {
-                Toast.makeText(requireContext(), "Permission Required", Toast.LENGTH_SHORT).show()
+        when(requestCode){
+            GET_LOCATION_UPDATE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startLocationUpdates()
+                } else {
+                    binding.mobileNumberEt.showSnackBar("Permission is Required")
+                }
+            }
+            SIGN_UP_FIREBASE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startLocationUpdates()
+                    signUpPhoneNumberFirebaseUI()
+                } else {
+                    binding.mobileNumberEt.showSnackBar("Permission is Required")
+                }
+            }
+            LOG_IN_FIREBASE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    startLocationUpdates()
+                    logInUser()
+                } else {
+                    binding.mobileNumberEt.showSnackBar("Permission is Required")
+                }
             }
         }
     }
@@ -341,4 +379,22 @@ class WelcomeFragment : Fragment() {
             }
         })
     }
+
+
+    private fun requestPermission(requestCode: Int) : Boolean{
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                requestCode
+            )
+            return false
+        }
+        return true
+    }
+
+
 }
