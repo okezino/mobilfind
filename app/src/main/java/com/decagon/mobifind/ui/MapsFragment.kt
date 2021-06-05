@@ -149,7 +149,7 @@ class MapsFragment : Fragment() {
     ) {
         val markerOptions =
             MarkerOptions().position(location).title("${name.trim()}${photoUri.trim()}")
-                .snippet("Address: ${address[0].getAddressLine(0)}\n" +
+                .snippet("Address: ${address[0].getAddressLine(0)}\n\n" +
                         "Last seen: ${timeConvert(lastSeen)}")
         map.clear()
         map.addMarker(markerOptions)

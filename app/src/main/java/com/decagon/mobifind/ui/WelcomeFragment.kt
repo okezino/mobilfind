@@ -79,7 +79,7 @@ class WelcomeFragment : Fragment() {
             override fun onLocationResult(p0: LocationResult) {
                 super.onLocationResult(p0)
                 lastLocation = p0.lastLocation
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
                 val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
                 val userLocation = UserLocation(currentLatLng, time = dateFormat.format(Date()).toString())
                 mobifindViewModel.saveUserLocationUpdates(userLocation)
@@ -132,12 +132,20 @@ class WelcomeFragment : Fragment() {
             if (requestPermission(LOG_IN_FIREBASE)){
                 logInUser()
             }
-
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        binding.fragmentWelcomeProgress.visibility = View.GONE
+    }
+
     private fun logInUser(){
-        val number = binding.mobileNumberEt.text.toString()
+        val number = binding.mobileNumberEt.text.toString().trim()
+        if(number.isEmpty()) {
+            binding.mobileNumberEt.error = "Please enter your mobile number"
+            return
+        }
         if (isSignedUp(filterNumber(number), mobifindUsers))
             signInPhoneNumberFirebaseUI(filterNumber(number))
         else {
