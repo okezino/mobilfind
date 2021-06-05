@@ -94,7 +94,7 @@ dependencies {
     // Picasso
     implementation 'com.squareup.picasso:picasso:2.5.2'
 
-    implementation 'com.vmadalin:easypermissions-ktx:1.0.0'
+
 
 
 }

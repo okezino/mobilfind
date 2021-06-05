@@ -38,13 +38,6 @@ fun initAdapter(adapter: UserAdapter, recyclerView: RecyclerView) {
     recyclerView.addItemDecoration(divider)
 }
 
-fun initPhoneAdapter(adapter: PhoneContactAdapter, recyclerView: RecyclerView) {
-    val divider = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
-    recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
-    recyclerView.addItemDecoration(divider)
-}
-
-
 fun filterNumber(number: String): String {
     val result = if (number.take(1) == "+") number else number.replaceRange(0..0, "+234")
     return result.filter { it == '+' || it.isDigit() }
@@ -52,6 +45,21 @@ fun filterNumber(number: String): String {
 
 fun inviteMessage(name: String): String {
     return "Hello $name \n check out this cool location tracker app using the below Link +++"
+}
+
+fun denyMessage():String{
+    return "Manually give Mobifind permission to your Contact, to enable you add Trackers to your list"
+}
+fun sendSuccessMessage(name: String):String{
+    return "$name has been successfully added to Tracker List"
+}
+
+fun failedMessage():String{
+    return "Failed Operation: Try again"
+}
+
+fun searchContact(s:String, contact:ArrayList<String>) : List<String>{
+    return  contact.filter { it.contains(s, ignoreCase = true)}
 }
 
 fun isSignedUp(number: String, users: ArrayList<String>) = number in users

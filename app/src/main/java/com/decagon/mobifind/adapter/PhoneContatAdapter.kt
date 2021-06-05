@@ -10,9 +10,10 @@ import com.decagon.mobifind.model.data.Contact
 
 class PhoneContactAdapter(
     private var onStatusClicked: OnclickPhoneContact,
-    private val phoneList: ArrayList<Contact>
+    private val list: List<String>
 ) : RecyclerView.Adapter<PhoneContactAdapter.PhoneViewHolder>() {
 
+    private val phoneList: List<String> = list.sorted()
 
     inner class PhoneViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
@@ -30,10 +31,11 @@ class PhoneContactAdapter(
     }
 
     override fun onBindViewHolder(holder: PhoneViewHolder, position: Int) {
-        holder.nameView.text = phoneList[position].name
-        holder.phoneNumberView.text = phoneList[position].number
+        val (name,number) = phoneList[position].split(":")
+        holder.nameView.text = name
+        holder.phoneNumberView.text = number
         holder.statusView.setOnClickListener {
-            onStatusClicked.onClickStatus(phoneList[position].name, phoneList[position].number)
+            onStatusClicked.onClickStatus(name, number)
         }
 
     }
