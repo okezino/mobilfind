@@ -59,6 +59,7 @@ class DashBoardFragment : Fragment() {
         binding.logout.setOnClickListener {
             AuthUI.getInstance().signOut(requireActivity()).addOnCompleteListener {
                 if (it.isSuccessful) {
+                    findNavController().popBackStack()
                     findNavController().navigate(R.id.welcomeFragment)
                 }
             }

@@ -100,6 +100,7 @@ class MobifindViewModel : ViewModel() {
         documentReference.set(Track(phoneNumber = phoneNumber))
         mobiUser.latitude = _userLocation.value?.latLng?.latitude
         mobiUser.longitude = _userLocation.value?.latLng?.longitude
+        mobiUser.time = _userLocation.value?.time
         return mobiUser
     }
 
@@ -183,14 +184,11 @@ class MobifindViewModel : ViewModel() {
             .document(phoneNumber).get().addOnSuccessListener {
                 val user = it.data
                 if (user != null) {
-                    for (i in user.keys) {
-                        if (i == "name") {
-                            user[i]?.let {
-                                _currentUserName.value = it.toString()
-                                return@addOnSuccessListener
-                            }
-                        }
+                    user["name"]?.let {
+                        _currentUserName.value = it.toString()
+                        return@addOnSuccessListener
                     }
+
                 }
             }
     }
@@ -204,12 +202,8 @@ class MobifindViewModel : ViewModel() {
                 if (value != null) {
                     val photo = value.data
                     if (photo != null) {
-                        for (i in photo.keys) {
-                            if (i == "remoteUri") {
-                                _photoUri.value = photo[i].toString()
-                                return@addSnapshotListener
-                            }
-                        }
+                        _photoUri.value = photo["remoteUri"].toString()
+                        return@addSnapshotListener
                     }
                 }
             }
@@ -299,7 +293,9 @@ class MobifindViewModel : ViewModel() {
 
     fun updateLocationDetails(){
         documentReference.collection("details")
-            .document(phoneNumber).update("longitude", _userLocation.value?.latLng?.longitude, "latitude",_userLocation.value?.latLng?.latitude)
+            .document(phoneNumber).update("longitude", _userLocation.value?.latLng?.longitude,
+                "latitude",_userLocation.value?.latLng?.latitude,
+                "time", _userLocation.value?.time)
             .addOnSuccessListener {
             }
     }

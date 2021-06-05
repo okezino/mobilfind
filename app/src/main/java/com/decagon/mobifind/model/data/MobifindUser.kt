@@ -5,5 +5,6 @@ data class MobifindUser(
     var longitude: Double? = null,
     var phoneNumber: String = "",
     var photoUri: String? = null,
-    var name: String? = null
+    var name: String? = null,
+    var time: String? = null
 )
