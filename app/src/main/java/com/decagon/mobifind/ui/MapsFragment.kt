@@ -22,6 +22,7 @@ import com.decagon.mobifind.model.data.Track
 import com.decagon.mobifind.utils.LOCATION_PERMISSION_REQUEST_CODE
 import com.decagon.mobifind.utils.NetworkLiveData
 import com.decagon.mobifind.utils.showSnackBar
+import com.decagon.mobifind.utils.timeConvert
 import com.decagon.mobifind.viewModel.MapViewModel
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
@@ -125,7 +126,8 @@ class MapsFragment : Fragment() {
                                 address!!,
                                 it.name ?: "Mobifind User",
                                 it.photoUri
-                                    ?: "https://st3.depositphotos.com/9998432/13335/v/600/depositphotos_133352154-stock-illustration-default-placeholder-profile-icon.jpg"
+                                    ?: "https://st3.depositphotos.com/9998432/13335/v/600/depositphotos_133352154-stock-illustration-default-placeholder-profile-icon.jpg",
+                                it.time
                             )
                             map.animateCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f))
                         }
@@ -142,11 +144,13 @@ class MapsFragment : Fragment() {
         location: LatLng,
         address: MutableList<Address>,
         name: String,
-        photoUri: String
+        photoUri: String,
+        lastSeen: String?
     ) {
         val markerOptions =
             MarkerOptions().position(location).title("${name.trim()}${photoUri.trim()}")
-                .snippet("Address: ${address[0].getAddressLine(0)}")
+                .snippet("Address: ${address[0].getAddressLine(0)}\n" +
+                        "Last seen: ${timeConvert(lastSeen)}")
         map.clear()
         map.addMarker(markerOptions)
     }
@@ -155,6 +159,5 @@ class MapsFragment : Fragment() {
         super.onAttach(context)
         this.activity = context as MainActivity
     }
-
 
 }

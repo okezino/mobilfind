@@ -1,6 +1,7 @@
 package com.decagon.mobifind.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
@@ -44,6 +45,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class WelcomeFragment : Fragment() {
@@ -72,11 +75,13 @@ class WelcomeFragment : Fragment() {
         // Receives updates when device location changes
 
         locationCallback = object : LocationCallback() {
+            @SuppressLint("SimpleDateFormat")
             override fun onLocationResult(p0: LocationResult) {
                 super.onLocationResult(p0)
                 lastLocation = p0.lastLocation
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
                 val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
-                val userLocation = UserLocation(currentLatLng)
+                val userLocation = UserLocation(currentLatLng, time = dateFormat.format(Date()).toString())
                 mobifindViewModel.saveUserLocationUpdates(userLocation)
             }
         }

@@ -1,5 +1,7 @@
 package com.decagon.mobifind.utils
 
+import android.annotation.SuppressLint
+import android.text.format.DateUtils
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
@@ -12,6 +14,10 @@ import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.adapter.UserAdapter
 import com.google.android.material.snackbar.Snackbar
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 fun View.showSnackBar(message: String) {
     Snackbar.make(this, message, Snackbar.LENGTH_SHORT)
@@ -64,3 +70,23 @@ fun searchContact(s:String, contact:ArrayList<String>) : List<String>{
 }
 
 fun isSignedUp(number: String, users: ArrayList<String>) = number in users
+
+
+/**
+* Function to convert time to time ago. To be monitored...
+*/
+@SuppressLint("SimpleDateFormat")
+fun timeConvert(string: String?): String {
+    val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+    sdf.timeZone = TimeZone.getTimeZone("GMT")
+    return try {
+        val time = sdf.parse(string).time
+        val now = System.currentTimeMillis()
+        val ago =
+            DateUtils.getRelativeTimeSpanString(time, now, DateUtils.MINUTE_IN_MILLIS)
+        ago.toString()
+    } catch (e: ParseException) {
+        e.printStackTrace()
+        System.currentTimeMillis().toString()
+    }
+}
