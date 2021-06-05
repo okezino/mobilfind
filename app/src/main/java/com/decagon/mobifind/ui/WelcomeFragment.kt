@@ -27,6 +27,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.decagon.mobifind.MainActivity
 import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.FragmentWelcomeBinding
 import com.decagon.mobifind.model.data.MobifindUser
@@ -75,10 +76,7 @@ class WelcomeFragment : Fragment() {
                 super.onLocationResult(p0)
                 lastLocation = p0.lastLocation
                 val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
-                val place = Geocoder(context?.applicationContext)
-                val myAddress =
-                    place.getFromLocation(lastLocation.latitude, lastLocation.longitude, 1)
-                val userLocation = UserLocation(currentLatLng, myAddress)
+                val userLocation = UserLocation(currentLatLng)
                 mobifindViewModel.saveUserLocationUpdates(userLocation)
             }
         }
@@ -395,6 +393,5 @@ class WelcomeFragment : Fragment() {
         }
         return true
     }
-
 
 }

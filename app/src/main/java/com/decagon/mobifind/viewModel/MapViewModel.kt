@@ -27,7 +27,9 @@ class MapViewModel : ViewModel() {
                 }
                 if (value != null) {
                     val userDetails = value.toObject(MobifindUser::class.java)
-                    _details.value = userDetails!!
+                    if(userDetails != null){
+                        _details.value = userDetails!!
+                    }
                 }
             }
     }
