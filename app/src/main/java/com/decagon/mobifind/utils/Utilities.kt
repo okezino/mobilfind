@@ -39,6 +39,7 @@ fun initAdapter(adapter: UserAdapter, recyclerView: RecyclerView) {
 }
 
 fun filterNumber(number: String): String {
+    if(number.isEmpty()) return ""
     val result = if (number.take(1) == "+") number else number.replaceRange(0..0, "+234")
     return result.filter { it == '+' || it.isDigit() }
 }
