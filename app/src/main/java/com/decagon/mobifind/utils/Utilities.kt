@@ -2,6 +2,7 @@ package com.decagon.mobifind.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Location
 import android.text.format.DateUtils
 import android.view.View
 import android.widget.ImageView
@@ -89,6 +90,17 @@ fun timeConvert(string: String?): String {
     } catch (e: ParseException) {
         e.printStackTrace()
         System.currentTimeMillis().toString()
+    }
+}
+
+/**
+ * Returns the `location` object as a human readable string.
+ */
+fun Location?.toText(): String {
+    return if (this != null) {
+        "($latitude, $longitude)"
+    } else {
+        "Unknown location"
     }
 }
 
