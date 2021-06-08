@@ -49,7 +49,10 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.os.Build
 import android.os.IBinder
+import android.provider.Settings
 import androidx.annotation.RequiresApi
+import com.decagon.mobifind.BuildConfig
+import com.google.android.material.snackbar.Snackbar
 
 
 class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener {
@@ -64,8 +67,8 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
     // Provides location updates for while-in-use feature.
     private var foregroundOnlyLocationService: MobifindLocationService? = null
 
-//    // Listens for location broadcasts from ForegroundOnlyLocationService.
-//    private lateinit var foregroundOnlyBroadcastReceiver: ForegroundOnlyBroadcastReceiver
+    // Listens for location broadcasts from ForegroundOnlyLocationService.
+    private lateinit var foregroundOnlyBroadcastReceiver: ForegroundOnlyBroadcastReceiver
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -117,6 +120,7 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
 //            }
 //        }
 //        makeLocationRequest()
+
     }
 
 
@@ -138,6 +142,11 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        foregroundOnlyBroadcastReceiver = ForegroundOnlyBroadcastReceiver()
+
+        sharedPreferences =
+            requireActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE)
         user = FirebaseAuth.getInstance().currentUser
 
         mobifindViewModel.getAllMobifindUsers()
@@ -160,11 +169,25 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
          */
         binding.loginBtn.setOnClickListener {
 //            Log.d("MobifindUserss", "onViewCreated: $mobifindUsers")
-//
-            if (requestPermission(LOG_IN_FIREBASE)){
-              //  logInUser()
-                sendCommandToService()
+                val enabled = sharedPreferences.getBoolean(
+                    SharedPreferenceUtil.KEY_FOREGROUND_ENABLED, false)
+
+                if (enabled) {
+                    foregroundOnlyLocationService?.unsubscribeToLocationUpdates()
+                } else {
+                    if (foregroundPermissionApproved()) {
+                        foregroundOnlyLocationService?.subscribeToLocationUpdates()
+                            ?: Log.d("WelcomeFragment", "Service Not Bound")
+                    } else {
+                        requestForegroundPermissions(LOG_IN_FIREBASE)
+                    }
             }
+//
+//            if (requestPermission(LOG_IN_FIREBASE)){
+//
+//              //  logInUser()
+//                sendCommandToService()
+//            }
 
         }
     }
@@ -335,6 +358,8 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
 //        )
     }
 
+
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -342,30 +367,54 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when(requestCode){
-            GET_LOCATION_UPDATE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                  //  startLocationUpdates()
-                } else {
-                    binding.mobileNumberEt.showSnackBar("Permission is Required")
-                }
-            }
+//            GET_LOCATION_UPDATE -> {
+//                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                  //  startLocationUpdates()
+//                } else {
+//                    binding.mobileNumberEt.showSnackBar("Permission is Required")
+//                }
+//            }
             SIGN_UP_FIREBASE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                   //  startLocationUpdates()
+                    foregroundOnlyLocationService?.subscribeToLocationUpdates()
                     signUpPhoneNumberFirebaseUI()
                 } else {
-                    binding.mobileNumberEt.showSnackBar("Permission is Required")
+                   showSettings()
                 }
             }
             LOG_IN_FIREBASE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                   //  startLocationUpdates()
+                    foregroundOnlyLocationService?.subscribeToLocationUpdates()
                     logInUser()
                 } else {
-                    binding.mobileNumberEt.showSnackBar("Permission is Required")
+                    showSettings()
                 }
             }
         }
+    }
+
+    private fun showSettings(){
+        Snackbar.make(
+            binding.loginBtn,
+            R.string.permission_denied_explanation,
+            Snackbar.LENGTH_LONG
+        )
+            .setAction(R.string.settings) {
+                // Build intent that displays the App settings screen.
+                val intent = Intent()
+                intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                val uri = Uri.fromParts(
+                    "package",
+                    BuildConfig.APPLICATION_ID,
+                    null
+                )
+                intent.data = uri
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
+            }
+            .show()
     }
 
     //=== IMAGE UPLPOAD =====//
@@ -408,6 +457,42 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
             requestBackgroundLocationPermission(requestCode)
         }else{
             requestLocationPermission(requestCode)
+        }
+    }
+
+    private fun foregroundPermissionApproved(): Boolean {
+        return PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+    }
+
+    // TODO: Step 1.0, Review Permissions: Method requests permissions.
+    private fun requestForegroundPermissions(requestCode: Int) {
+        val provideRationale = foregroundPermissionApproved()
+
+        // If the user denied a previous request, but didn't check "Don't ask again", provide
+        // additional rationale.
+        if (provideRationale) {
+            Snackbar.make(
+                binding.loginBtn,
+                R.string.permission_rationale,
+                Snackbar.LENGTH_LONG
+            )
+                .setAction(R.string.ok) {
+                    // Request permission
+                    requestPermissions(
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                        requestCode
+                    )
+                }
+                .show()
+        } else {
+            Log.d("WelcomeFragment", "Request foreground only permission")
+            requestPermissions(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                requestCode
+            )
         }
     }
 
