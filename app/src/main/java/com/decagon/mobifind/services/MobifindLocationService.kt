@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.location.Location
 import android.os.Binder
 import android.os.Build
@@ -126,9 +127,17 @@ class MobifindLocationService : LifecycleService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        getLocationUpdates()
+        Log.d(TAG, "onStartCommand()")
 
-        return START_STICKY
+        val cancelLocationTrackingFromNotification =
+            intent?.getBooleanExtra(EXTRA_CANCEL_LOCATION_TRACKING_FROM_NOTIFICATION, false)
+
+        if (cancelLocationTrackingFromNotification == true) {
+            unsubscribeToLocationUpdates()
+            stopSelf()
+        }
+        // Tells the system not to recreate the service after it's been killed.
+        return START_NOT_STICKY
     }
 
     private fun getLocationUpdates() {
@@ -187,10 +196,70 @@ class MobifindLocationService : LifecycleService() {
 
     }
 
-    override fun onBind(intent: Intent): IBinder? {
+    override fun onBind(intent: Intent): IBinder {
         super.onBind(intent)
-        return null
+        Log.d(TAG, "onBind()")
+
+        // MainActivity (client) comes into foreground and binds to service, so the service can
+        // become a background services.
+        stopForeground(true)
+        serviceRunningInForeground = false
+        configurationChange = false
+        return localBinder
     }
+
+    override fun onRebind(intent: Intent) {
+        Log.d(TAG, "onRebind()")
+
+        // MainActivity (client) returns to the foreground and rebinds to service, so the service
+        // can become a background services.
+        stopForeground(true)
+        serviceRunningInForeground = false
+        configurationChange = false
+        super.onRebind(intent)
+    }
+
+    override fun onUnbind(intent: Intent): Boolean {
+        Log.d(TAG, "onUnbind()")
+
+        // MainActivity (client) leaves foreground, so service needs to become a foreground service
+        // to continue receiving location updates
+        if (!configurationChange && SharedPreferenceUtil.getLocationTrackingPref(this)) {
+            Log.d(TAG, "Start foreground service")
+            val notification = generateNotification(currentLocation)
+            startForeground(NOTIFICATION_ID, notification)
+            serviceRunningInForeground = true
+        }
+
+        // Ensures onRebind() is called if MainActivity (client) rebinds.
+        return true
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        configurationChange = true
+    }
+
+    fun subscribeToLocationUpdates() {
+        Log.d(TAG, "subscribeToLocationUpdates()")
+
+        SharedPreferenceUtil.saveLocationTrackingPref(this, true)
+
+        // Binding to this service doesn't actually trigger onStartCommand(). That is needed to
+        // ensure this Service can be promoted to a foreground service, i.e., the service needs to
+        // be officially started (which we do here).
+        startService(Intent(applicationContext, MobifindLocationService::class.java))
+
+        try {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest, locationCallback, Looper.getMainLooper())
+        } catch (unlikely: SecurityException) {
+            SharedPreferenceUtil.saveLocationTrackingPref(this, false)
+            Log.e(TAG, "Lost location permissions. Couldn't remove updates. $unlikely")
+        }
+    }
+
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -232,6 +301,29 @@ class MobifindLocationService : LifecycleService() {
             IMPORTANCE_LOW
         )
         notificationManager.createNotificationChannel(channel)
+    }
+
+
+
+    fun unsubscribeToLocationUpdates() {
+        Log.d(TAG, "unsubscribeToLocationUpdates()")
+
+        try {
+            // TODO: Step 1.6, Unsubscribe to location changes.
+            val removeTask = fusedLocationClient.removeLocationUpdates(locationCallback)
+            removeTask.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d(TAG, "Location Callback removed.")
+                    stopSelf()
+                } else {
+                    Log.d(TAG, "Failed to remove Location Callback.")
+                }
+            }
+            SharedPreferenceUtil.saveLocationTrackingPref(this, false)
+        } catch (unlikely: SecurityException) {
+            SharedPreferenceUtil.saveLocationTrackingPref(this, true)
+            Log.e(TAG, "Lost location permissions. Couldn't remove updates. $unlikely")
+        }
     }
 
     /*
