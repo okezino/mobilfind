@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
+import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
@@ -19,6 +20,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.MutableLiveData
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.decagon.mobifind.R
 import com.decagon.mobifind.model.data.UserLocation
 import com.decagon.mobifind.utils.LOCATION_UPDATE_STATE
@@ -33,14 +35,56 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class MobifindLocationService : LifecycleService() {
-    private lateinit var lastLocation: Location
+    // Used only for storage of the last known location.
+    private lateinit var currentLocation : Location
+
+    // LocationCallback - Called when FusedLocationProviderClient has a new Location.
     private lateinit var locationCallback: LocationCallback
+
+    // LocationRequest - Requirements for the location updates, i.e., how often you should receive
+    // updates, the priority, etc.
     private lateinit var locationRequest: LocationRequest
+
+    // FusedLocationProviderClient - Main class for receiving location updates.
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var mobifindViewModel : MobifindViewModel
+    /*
+ * Checks whether the bound activity has really gone away (foreground service with notification
+ * created) or simply orientation change (no-op).
+ */
+    private var configurationChange = false
+
+    private var serviceRunningInForeground = false
+
+    private val localBinder = LocalBinder()
+
+    private lateinit var notificationManager: NotificationManager
+
 
     companion object {
-        val pathPoints = MutableLiveData<UserLocation>()
+        private const val TAG = "ForegroundOnlyLocationService"
+
+        private const val PACKAGE_NAME = "com.decagon.mobifind"
+
+        internal const val ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST =
+            "$PACKAGE_NAME.action.FOREGROUND_ONLY_LOCATION_BROADCAST"
+
+        internal const val EXTRA_LOCATION = "$PACKAGE_NAME.extra.LOCATION"
+
+        private const val EXTRA_CANCEL_LOCATION_TRACKING_FROM_NOTIFICATION =
+            "$PACKAGE_NAME.extra.CANCEL_LOCATION_TRACKING_FROM_NOTIFICATION"
+
+        private const val NOTIFICATION_ID = 12345678
+
+        private const val NOTIFICATION_CHANNEL_ID = "mobifind_channel_01"
+    }
+
+    /**
+     * Class used for the client Binder.  This service runs in the same process as its
+     * clients
+     */
+    inner class LocalBinder : Binder() {
+        internal val service: MobifindLocationService
+            get() = this@MobifindLocationService
     }
 
 
@@ -50,18 +94,22 @@ class MobifindLocationService : LifecycleService() {
         startForegroundService()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)
 
-      //  mobifindViewModel = ViewModelProvider(applicationContext as Activity).get(MobifindViewModel::class.java)
-        // Receives updates when device location changes
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        getLocationUpdates()
 
         locationCallback = object : LocationCallback() {
             @SuppressLint("SimpleDateFormat")
             override fun onLocationResult(p0: LocationResult) {
                 super.onLocationResult(p0)
-                lastLocation = p0.lastLocation
+                currentLocation = p0.lastLocation
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-                val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
+                val currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude)
                 val userLocation = UserLocation(currentLatLng, time = dateFormat.format(Date()).toString())
-                pathPoints.postValue(userLocation)
+
+                val intent = Intent(ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST)
+                intent.putExtra(EXTRA_LOCATION, userLocation)
+                LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(intent)
             //    mobifindViewModel.saveUserLocationUpdates(userLocation)
                 Log.d("Servicces", "onCreate: Services called ${currentLatLng.latitude}")
                 Toast.makeText(applicationContext, "Location received: " + currentLatLng.latitude, Toast.LENGTH_SHORT).show();
@@ -77,11 +125,13 @@ class MobifindLocationService : LifecycleService() {
     }
 
     private fun getLocationUpdates() {
-        locationRequest = LocationRequest.create()
-        locationRequest.interval = 10000
-        locationRequest.fastestInterval = 5000
-        locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        locationRequest.smallestDisplacement = 10f
+        locationRequest = LocationRequest.create().apply {
+            interval = 10000
+            fastestInterval = 5000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            smallestDisplacement = 10f
+        }
+
 
         val builder = LocationSettingsRequest.Builder()
             .addLocationRequest(locationRequest)
@@ -142,9 +192,6 @@ class MobifindLocationService : LifecycleService() {
     }
 
     private fun startForegroundService() {
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE)
-                as NotificationManager
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel(notificationManager)
