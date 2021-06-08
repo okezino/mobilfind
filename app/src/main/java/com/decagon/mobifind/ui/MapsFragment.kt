@@ -9,11 +9,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.decagon.mobifind.MainActivity
 import com.decagon.mobifind.R
@@ -27,14 +29,12 @@ import com.decagon.mobifind.viewModel.MapViewModel
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import java.util.*
 
 class MapsFragment : Fragment() {
     private lateinit var map: GoogleMap
-    private val mapViewModel by activityViewModels<MapViewModel>()
+    private val mapViewModel by viewModels<MapViewModel>()
     private val mapsArgs by navArgs<MapsFragmentArgs>()
     private lateinit var tracking: Track
-    private lateinit var activity: MainActivity
     private var address: MutableList<Address>? = null
 
 
@@ -61,10 +61,11 @@ class MapsFragment : Fragment() {
 
     }
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         tracking = mapsArgs.tracking
-
     }
 
     override fun onCreateView(
@@ -96,9 +97,9 @@ class MapsFragment : Fragment() {
         }
         map.isMyLocationEnabled = true
         tracking.phoneNumber?.let { mapViewModel.getMapDetails(it) }
-        NetworkLiveData.observe(activity, { connected ->
+        NetworkLiveData.observe(requireActivity(), { connected ->
             if (connected) {
-                mapViewModel.details.observe(activity, {
+                mapViewModel.details.observe(viewLifecycleOwner, {
                     val currentLatLng = it.latitude?.let { it1 ->
                         it.longitude?.let { it2 ->
                             LatLng(
@@ -155,9 +156,5 @@ class MapsFragment : Fragment() {
         map.addMarker(markerOptions)
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        this.activity = context as MainActivity
-    }
 
 }
