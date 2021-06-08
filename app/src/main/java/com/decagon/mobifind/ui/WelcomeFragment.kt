@@ -3,9 +3,7 @@ package com.decagon.mobifind.ui
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
-import android.content.Context
-import android.content.Intent
-import android.content.IntentSender
+import android.content.*
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
@@ -50,13 +48,26 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import android.os.Build
+import android.os.IBinder
 import androidx.annotation.RequiresApi
 
 
-class WelcomeFragment : Fragment() {
+class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener {
     private var _binding: FragmentWelcomeBinding? = null
     private val binding
         get() = _binding!!
+
+    private val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
+
+    private var foregroundOnlyLocationServiceBound = false
+
+    // Provides location updates for while-in-use feature.
+    private var foregroundOnlyLocationService: MobifindLocationService? = null
+
+//    // Listens for location broadcasts from ForegroundOnlyLocationService.
+//    private lateinit var foregroundOnlyBroadcastReceiver: ForegroundOnlyBroadcastReceiver
+
+    private lateinit var sharedPreferences: SharedPreferences
 
     private lateinit var lastLocation: Location
     private lateinit var locationCallback: LocationCallback
@@ -71,6 +82,22 @@ class WelcomeFragment : Fragment() {
     private var photo: Photo? = null
     private var user: FirebaseUser? = null
     private lateinit var logInNumber: String
+
+    // Monitors connection to the while-in-use service.
+    private val foregroundOnlyServiceConnection = object : ServiceConnection {
+
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            val binder = service as MobifindLocationService.LocalBinder
+            foregroundOnlyLocationService = binder.service
+            foregroundOnlyLocationServiceBound = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName) {
+            foregroundOnlyLocationService = null
+            foregroundOnlyLocationServiceBound = false
+        }
+    }
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -439,6 +466,10 @@ class WelcomeFragment : Fragment() {
             return false
         }
         return true
+    }
+
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        TODO("Not yet implemented")
     }
 
 
