@@ -1,10 +1,12 @@
 package com.decagon.mobifind.utils
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.text.format.DateUtils
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.core.content.edit
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -88,4 +90,33 @@ fun timeConvert(string: String?): String {
         e.printStackTrace()
         System.currentTimeMillis().toString()
     }
+}
+
+/**
+ * Provides access to SharedPreferences for location to Activities and Services.
+ */
+internal object SharedPreferenceUtil {
+
+    private const val KEY_FOREGROUND_ENABLED = "tracking_foreground_location"
+
+    /**
+     * Returns true if requesting location updates, otherwise returns false.
+     *
+     * @param context The [Context].
+     */
+    fun getLocationTrackingPref(context: Context): Boolean =
+        context.getSharedPreferences(
+            context.getString(R.string.preference_file_key), Context.MODE_PRIVATE)
+            .getBoolean(KEY_FOREGROUND_ENABLED, false)
+
+    /**
+     * Stores the location updates state in SharedPreferences.
+     * @param requestingLocationUpdates The location updates state.
+     */
+    fun saveLocationTrackingPref(context: Context, requestingLocationUpdates: Boolean) =
+        context.getSharedPreferences(
+            context.getString(R.string.preference_file_key),
+            Context.MODE_PRIVATE).edit {
+            putBoolean(KEY_FOREGROUND_ENABLED, requestingLocationUpdates)
+        }
 }

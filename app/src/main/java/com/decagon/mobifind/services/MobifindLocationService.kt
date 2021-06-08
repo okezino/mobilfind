@@ -17,7 +17,8 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import com.decagon.mobifind.MainActivity
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.MutableLiveData
 import com.decagon.mobifind.R
 import com.decagon.mobifind.model.data.UserLocation
 import com.decagon.mobifind.utils.LOCATION_UPDATE_STATE
@@ -31,12 +32,18 @@ import com.google.android.gms.maps.model.LatLng
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MobifindLocationService : Service() {
+class MobifindLocationService : LifecycleService() {
     private lateinit var lastLocation: Location
     private lateinit var locationCallback: LocationCallback
     private lateinit var locationRequest: LocationRequest
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var mobifindViewModel : MobifindViewModel
+
+    companion object {
+        val pathPoints = MutableLiveData<UserLocation>()
+    }
+
+
 
     override fun onCreate() {
         super.onCreate()
@@ -54,6 +61,7 @@ class MobifindLocationService : Service() {
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
                 val currentLatLng = LatLng(lastLocation.latitude, lastLocation.longitude)
                 val userLocation = UserLocation(currentLatLng, time = dateFormat.format(Date()).toString())
+                pathPoints.postValue(userLocation)
             //    mobifindViewModel.saveUserLocationUpdates(userLocation)
                 Log.d("Servicces", "onCreate: Services called ${currentLatLng.latitude}")
                 Toast.makeText(applicationContext, "Location received: " + currentLatLng.latitude, Toast.LENGTH_SHORT).show();
@@ -62,6 +70,7 @@ class MobifindLocationService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
         getLocationUpdates()
 
         return START_STICKY
@@ -122,6 +131,7 @@ class MobifindLocationService : Service() {
     }
 
     override fun onBind(intent: Intent): IBinder? {
+        super.onBind(intent)
         return null
     }
 

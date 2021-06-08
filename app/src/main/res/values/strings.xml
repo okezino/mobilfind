@@ -24,4 +24,6 @@
     <string name="phone_number">+234 802 232 0123</string>
     <string name="dialog_tv_hint">Please enter your username</string>
     <string name="dialog_done_btn">Done</string>
+
+    <string name="preference_file_key">com.decagon.mobifind.PREFERENCE_FILE_KEY</string>
 </resources>

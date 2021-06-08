@@ -90,6 +90,9 @@ class WelcomeFragment : Fragment() {
 //            }
 //        }
 //        makeLocationRequest()
+        MobifindLocationService.pathPoints.observe(requireActivity(),{
+            mobifindViewModel.saveUserLocationUpdates(it)
+        })
     }
 
 

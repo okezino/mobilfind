@@ -72,6 +72,7 @@ class MobifindViewModel : ViewModel() {
 
     fun saveUserLocationUpdates(userLocation: UserLocation) {
         _userLocation.value = userLocation
+        Log.d("MobifindViewModel", "saveUserLocationUpdates: ${userLocation.latLng.latitude}")
     }
 
 
