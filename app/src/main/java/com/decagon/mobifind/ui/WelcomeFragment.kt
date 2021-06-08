@@ -117,9 +117,6 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
 //            }
 //        }
 //        makeLocationRequest()
-        MobifindLocationService.pathPoints.observe(requireActivity(),{
-            mobifindViewModel.saveUserLocationUpdates(it)
-        })
     }
 
 
@@ -470,6 +467,26 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         TODO("Not yet implemented")
+    }
+
+    private fun logResultsToScreen(output: String) {
+        Toast.makeText(requireContext(), output, Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * Receiver for location broadcasts from [ForegroundOnlyLocationService].
+     */
+    private inner class ForegroundOnlyBroadcastReceiver : BroadcastReceiver() {
+
+        override fun onReceive(context: Context, intent: Intent) {
+            val location = intent.getParcelableExtra<Location>(
+                MobifindLocationService.EXTRA_LOCATION
+            )
+
+            if (location != null) {
+                logResultsToScreen("Foreground location: ${location.toText()}")
+            }
+        }
     }
 
 
