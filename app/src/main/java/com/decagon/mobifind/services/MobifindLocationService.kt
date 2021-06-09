@@ -91,7 +91,7 @@ class MobifindLocationService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-        startForegroundService()
+       // startForegroundService()
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)
 
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -267,41 +267,41 @@ class MobifindLocationService : LifecycleService() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
-    private fun startForegroundService() {
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel(notificationManager)
-        }
-
-        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setAutoCancel(false)
-            .setOngoing(true)
-            .setSmallIcon(R.drawable.logo)
-            .setContentTitle("Running App")
-            .setContentText("00:00:00")
-          //  .setContentIntent(getMainActivityPendingIntent())
-
-        startForeground(NOTIFICATION_ID, notificationBuilder.build())
-    }
-
-//    private fun getMainActivityPendingIntent() = PendingIntent.getActivity(
-//        this,
-//        0,
-//        Intent(this, MainActivity::class.java).also {
-//            it.action = ACTION_SHOW_TRACKING_FRAGMENT
-//        },
-//        FLAG_UPDATE_CURRENT
-//    )
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel(notificationManager: NotificationManager) {
-        val channel = NotificationChannel(
-            NOTIFICATION_CHANNEL_ID,
-            NOTIFICATION_CHANNEL_NAME,
-            IMPORTANCE_LOW
-        )
-        notificationManager.createNotificationChannel(channel)
-    }
+//    private fun startForegroundService() {
+//
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            createNotificationChannel(notificationManager)
+//        }
+//
+//        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+//            .setAutoCancel(false)
+//            .setOngoing(true)
+//            .setSmallIcon(R.drawable.logo)
+//            .setContentTitle("Running App")
+//            .setContentText("00:00:00")
+//          //  .setContentIntent(getMainActivityPendingIntent())
+//
+//        startForeground(NOTIFICATION_ID, notificationBuilder.build())
+//    }
+//
+////    private fun getMainActivityPendingIntent() = PendingIntent.getActivity(
+////        this,
+////        0,
+////        Intent(this, MainActivity::class.java).also {
+////            it.action = ACTION_SHOW_TRACKING_FRAGMENT
+////        },
+////        FLAG_UPDATE_CURRENT
+////    )
+//
+//    @RequiresApi(Build.VERSION_CODES.O)
+//    private fun createNotificationChannel(notificationManager: NotificationManager) {
+//        val channel = NotificationChannel(
+//            NOTIFICATION_CHANNEL_ID,
+//            NOTIFICATION_CHANNEL_NAME,
+//            IMPORTANCE_LOW
+//        )
+//        notificationManager.createNotificationChannel(channel)
+//    }
 
 
 

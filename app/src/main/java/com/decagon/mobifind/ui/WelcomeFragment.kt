@@ -51,16 +51,15 @@ import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
 import androidx.annotation.RequiresApi
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.decagon.mobifind.BuildConfig
 import com.google.android.material.snackbar.Snackbar
 
 
-class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeListener {
+class WelcomeFragment : Fragment() {
     private var _binding: FragmentWelcomeBinding? = null
     private val binding
         get() = _binding!!
-
-    private val REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE = 34
 
     private var foregroundOnlyLocationServiceBound = false
 
@@ -101,6 +100,42 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+
+      //  sharedPreferences.registerOnSharedPreferenceChangeListener(this)
+
+        val serviceIntent = Intent(requireActivity(), MobifindLocationService::class.java)
+
+        requireActivity().bindService(serviceIntent, foregroundOnlyServiceConnection, Context.BIND_AUTO_CREATE)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.fragmentWelcomeProgress.visibility = View.GONE
+        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(
+            foregroundOnlyBroadcastReceiver,
+            IntentFilter(
+                MobifindLocationService.ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST)
+        )
+    }
+
+    override fun onPause() {
+        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(
+            foregroundOnlyBroadcastReceiver
+        )
+        super.onPause()
+    }
+
+    override fun onStop() {
+        if (foregroundOnlyLocationServiceBound) {
+            requireActivity().unbindService(foregroundOnlyServiceConnection)
+            foregroundOnlyLocationServiceBound = false
+        }
+      //  sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
+
+        super.onStop()
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -190,11 +225,6 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
 //            }
 
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        binding.fragmentWelcomeProgress.visibility = View.GONE
     }
 
     private fun logInUser(){
@@ -550,10 +580,6 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
         return true
     }
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        TODO("Not yet implemented")
-    }
-
     private fun logResultsToScreen(output: String) {
         Toast.makeText(requireContext(), output, Toast.LENGTH_SHORT).show()
     }
@@ -564,12 +590,12 @@ class WelcomeFragment : Fragment(), SharedPreferences.OnSharedPreferenceChangeLi
     private inner class ForegroundOnlyBroadcastReceiver : BroadcastReceiver() {
 
         override fun onReceive(context: Context, intent: Intent) {
-            val location = intent.getParcelableExtra<Location>(
+            val location = intent.getParcelableExtra<UserLocation>(
                 MobifindLocationService.EXTRA_LOCATION
             )
 
             if (location != null) {
-                logResultsToScreen("Foreground location: ${location.toText()}")
+                logResultsToScreen("Foreground location: ${location.latLng.longitude}")
             }
         }
     }
