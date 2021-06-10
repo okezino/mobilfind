@@ -3,7 +3,6 @@ package com.decagon.mobifind.services
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.*
-import android.app.NotificationManager.IMPORTANCE_LOW
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
@@ -15,20 +14,15 @@ import android.os.Build
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.decagon.mobifind.MainActivity
 import com.decagon.mobifind.R
 import com.decagon.mobifind.model.data.MobifindUser
-import com.decagon.mobifind.model.data.Track
 import com.decagon.mobifind.model.data.UserLocation
 import com.decagon.mobifind.utils.*
-import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
@@ -36,7 +30,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.to
 
 class MobifindLocationService : LifecycleService() {
     // Used only for storage of the last known location.
@@ -98,7 +91,7 @@ class MobifindLocationService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
-       // startForegroundService()
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)
 
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -126,11 +119,7 @@ class MobifindLocationService : LifecycleService() {
                         NOTIFICATION_ID,
                         generateNotification(currentLocation))
                 }
-             //   SharedPreferenceUtil.saveLocationLatitudePref(this@MobifindLocationService,currentLatLng)
-            //    mobifindViewModel.saveUserLocationUpdates(userLocation)
                 val fore = SharedPreferenceUtil.getDisplayName(this@MobifindLocationService)
-                Log.d("Servicces", "onCreate: Services called ${currentLatLng.latitude}")
-                Log.d("ForegroundData", "onCreate: Services called ${fore.name}")
                 if(fore.phoneNumber != null && fore.name != null){
                     val mobiUser = MobifindUser().apply {
                         phoneNumber = fore.phoneNumber
@@ -140,7 +129,6 @@ class MobifindLocationService : LifecycleService() {
                         .document(fore.phoneNumber).collection("details").document(fore.phoneNumber).set(saveUser(mobiUser,userLocation))
                 }
 
-                Toast.makeText(applicationContext, "Location received: " + currentLatLng.latitude, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -203,10 +191,6 @@ class MobifindLocationService : LifecycleService() {
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-//            requestPermissions(
-//                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-//                GET_LOCATION_UPDATE
-//            )
             stopSelf()
             return
         }
@@ -294,45 +278,8 @@ class MobifindLocationService : LifecycleService() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
-//    private fun startForegroundService() {
-//
-//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            createNotificationChannel(notificationManager)
-//        }
-//
-//        val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-//            .setAutoCancel(false)
-//            .setOngoing(true)
-//            .setSmallIcon(R.drawable.logo)
-//            .setContentTitle("Running App")
-//            .setContentText("00:00:00")
-//          //  .setContentIntent(getMainActivityPendingIntent())
-//
-//        startForeground(NOTIFICATION_ID, notificationBuilder.build())
-//    }
-//
-////    private fun getMainActivityPendingIntent() = PendingIntent.getActivity(
-////        this,
-////        0,
-////        Intent(this, MainActivity::class.java).also {
-////            it.action = ACTION_SHOW_TRACKING_FRAGMENT
-////        },
-////        FLAG_UPDATE_CURRENT
-////    )
-//
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    private fun createNotificationChannel(notificationManager: NotificationManager) {
-//        val channel = NotificationChannel(
-//            NOTIFICATION_CHANNEL_ID,
-//            NOTIFICATION_CHANNEL_NAME,
-//            IMPORTANCE_LOW
-//        )
-//        notificationManager.createNotificationChannel(channel)
-//    }
 
-
-
-    fun unsubscribeToLocationUpdates() {
+    private fun unsubscribeToLocationUpdates() {
         Log.d(TAG, "unsubscribeToLocationUpdates()")
 
         try {
@@ -357,20 +304,12 @@ class MobifindLocationService : LifecycleService() {
     * Generates a BIG_TEXT_STYLE Notification that represent latest location.
     */
     private fun generateNotification(location: Location?): Notification {
-        Log.d(TAG, "generateNotification()")
 
-        // Main steps for building a BIG_TEXT_STYLE notification:
-        //      0. Get data
-        //      1. Create Notification Channel for O+
-        //      2. Build the BIG_TEXT_STYLE
-        //      3. Set up Intent / Pending Intent for notification
-        //      4. Build and issue the notification
-
-        // 0. Get data
-        val mainNotificationText = location?.toText() ?: getString(R.string.no_location_text)
+        // Gets data
+        val mainNotificationText = getString(R.string.no_location_text)
         val titleText = getString(R.string.app_name)
 
-        // 1. Create Notification Channel for O+ and beyond devices (26+).
+        // Creates Notification Channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             val notificationChannel = NotificationChannel(
@@ -378,25 +317,24 @@ class MobifindLocationService : LifecycleService() {
             notificationManager.createNotificationChannel(notificationChannel)
         }
 
-        // 2. Build the BIG_TEXT_STYLE.
+        // Builds the BIG_TEXT_STYLE
         val bigTextStyle = NotificationCompat.BigTextStyle()
             .bigText(mainNotificationText)
             .setBigContentTitle(titleText)
 
-        // 3. Set up main Intent/Pending Intents for notification.
+        // Sets up main Intent/Pending Intents for notification
         val launchActivityIntent = Intent(this, MainActivity::class.java)
 
         val cancelIntent = Intent(this, MobifindLocationService::class.java)
         cancelIntent.putExtra(EXTRA_CANCEL_LOCATION_TRACKING_FROM_NOTIFICATION, true)
 
-        val servicePendingIntent = PendingIntent.getService(
-            this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+//        val servicePendingIntent = PendingIntent.getService(
+//            this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
         val activityPendingIntent = PendingIntent.getActivity(
             this, 0, launchActivityIntent, 0)
 
-        // 4. Build and issue the notification.
-        // Notification Channel Id is ignored for Android pre O (26).
+        // Builds and issues the notification
         val notificationCompatBuilder =
             NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
 
@@ -411,11 +349,6 @@ class MobifindLocationService : LifecycleService() {
             .addAction(
                 R.drawable.ic_launch, getString(R.string.launch_activity),
                 activityPendingIntent
-            )
-            .addAction(
-                R.drawable.ic_cancel,
-                getString(R.string.stop_location_updates_button_text),
-                servicePendingIntent
             )
             .build()
     }
