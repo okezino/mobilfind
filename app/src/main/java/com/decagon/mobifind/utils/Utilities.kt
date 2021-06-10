@@ -1,10 +1,13 @@
 package com.decagon.mobifind.utils
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.location.Location
 import android.text.format.DateUtils
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.core.content.edit
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -13,7 +16,10 @@ import com.bumptech.glide.request.RequestOptions
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.adapter.UserAdapter
+import com.decagon.mobifind.model.data.ForegroundData
+import com.decagon.mobifind.model.data.UserLocation
 import com.google.android.material.snackbar.Snackbar
+import com.google.type.LatLng
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -88,4 +94,68 @@ fun timeConvert(string: String?): String {
         e.printStackTrace()
         System.currentTimeMillis().toString()
     }
+}
+
+/**
+ * Returns the `location` object as a human readable string.
+ */
+fun Location?.toText(): String {
+    return if (this != null) {
+        "($latitude, $longitude)"
+    } else {
+        "Unknown location"
+    }
+}
+
+/**
+ * Provides access to SharedPreferences for location to Activities and Services.
+ */
+internal object SharedPreferenceUtil {
+
+    const val KEY_FOREGROUND_ENABLED = "tracking_foreground_location"
+    const val LOCATION_LATITUDE = "Location_latitude"
+    const val LOCATION_LONGITUDE = "Location_longitude"
+    const val DISPLAY_NAME = "displayName"
+    const val PHONE_NUMBER = "phoneNumber"
+
+    /**
+     * Returns true if requesting location updates, otherwise returns false.
+     *
+     * @param context The [Context].
+     */
+    fun getLocationTrackingPref(context: Context): Boolean =
+        context.getSharedPreferences(
+            context.getString(R.string.preference_file_key), Context.MODE_PRIVATE)
+            .getBoolean(KEY_FOREGROUND_ENABLED, false)
+
+    /**
+     * Stores the location updates state in SharedPreferences.
+     * @param requestingLocationUpdates The location updates state.
+     */
+    fun saveLocationTrackingPref(context: Context, requestingLocationUpdates: Boolean) =
+        context.getSharedPreferences(
+            context.getString(R.string.preference_file_key),
+            Context.MODE_PRIVATE).edit {
+            putBoolean(KEY_FOREGROUND_ENABLED, requestingLocationUpdates)
+        }
+
+    fun saveDisplayNamePref(context: Context,displayName : String, phoneNumber : String){
+        context.getSharedPreferences(
+            context.getString(R.string.preference_file_key),
+            Context.MODE_PRIVATE).edit {
+            putString(DISPLAY_NAME, displayName)
+            putString(PHONE_NUMBER, phoneNumber)
+            apply()
+        }
+
+    }
+
+    fun getDisplayName(context: Context) : ForegroundData{
+        val name = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE).getString(
+            DISPLAY_NAME, null)
+        val phoneNumber = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE).getString(
+            PHONE_NUMBER, null)
+        return ForegroundData(name,phoneNumber)
+    }
+
 }
