@@ -194,9 +194,9 @@ class WelcomeFragment : Fragment() {
          * Signs up a new user with their phoneNumber
          */
         binding.signupBtn.setOnClickListener {
-//            if(requestPermission(SIGN_UP_FIREBASE))
-//            signUpPhoneNumberFirebaseUI()
-            sendStopCommandToService()
+            if(requestPermission(SIGN_UP_FIREBASE))
+            signUpPhoneNumberFirebaseUI()
+          //  sendStopCommandToService()
         }
 
         /**
@@ -204,19 +204,19 @@ class WelcomeFragment : Fragment() {
          */
         binding.loginBtn.setOnClickListener {
 //            Log.d("MobifindUserss", "onViewCreated: $mobifindUsers")
-                val enabled = sharedPreferences.getBoolean(
-                    SharedPreferenceUtil.KEY_FOREGROUND_ENABLED, false)
-
-                if (enabled) {
-                    foregroundOnlyLocationService?.unsubscribeToLocationUpdates()
-                } else {
-                    if (foregroundPermissionApproved()) {
-                        foregroundOnlyLocationService?.subscribeToLocationUpdates()
-                            ?: Log.d("WelcomeFragment", "Service Not Bound")
-                    } else {
-                        requestForegroundPermissions(LOG_IN_FIREBASE)
-                    }
-            }
+//                val enabled = sharedPreferences.getBoolean(
+//                    SharedPreferenceUtil.KEY_FOREGROUND_ENABLED, false)
+//
+//                if (enabled) {
+//                    foregroundOnlyLocationService?.unsubscribeToLocationUpdates()
+//                } else {
+//                    if (foregroundPermissionApproved()) {
+//                        foregroundOnlyLocationService?.subscribeToLocationUpdates()
+//                            ?: Log.d("WelcomeFragment", "Service Not Bound")
+//                    } else {
+//                        requestForegroundPermissions(LOG_IN_FIREBASE)
+//                    }
+//            }
 //
 //            if (requestPermission(LOG_IN_FIREBASE)){
 //
@@ -324,10 +324,14 @@ class WelcomeFragment : Fragment() {
                 displayNameEt.error = "Username must not be empty"
                 return@setOnClickListener
             }
+
+
             val mobiUser = MobifindUser().apply {
                 phoneNumber = user!!.phoneNumber.toString()
                 name = displayName
+                SharedPreferenceUtil.saveDisplayNamePref(requireActivity(),displayName,phoneNumber)
             }
+            foregroundOnlyLocationService?.subscribeToLocationUpdates()
             mobifindViewModel.apply {
                 if (imageUri == null) {
                     signUpUserWithoutPhoto(mobiUser)

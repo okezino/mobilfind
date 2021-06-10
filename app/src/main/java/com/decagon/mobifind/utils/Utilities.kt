@@ -16,7 +16,10 @@ import com.bumptech.glide.request.RequestOptions
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.adapter.UserAdapter
+import com.decagon.mobifind.model.data.ForegroundData
+import com.decagon.mobifind.model.data.UserLocation
 import com.google.android.material.snackbar.Snackbar
+import com.google.type.LatLng
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -110,6 +113,10 @@ fun Location?.toText(): String {
 internal object SharedPreferenceUtil {
 
     const val KEY_FOREGROUND_ENABLED = "tracking_foreground_location"
+    const val LOCATION_LATITUDE = "Location_latitude"
+    const val LOCATION_LONGITUDE = "Location_longitude"
+    const val DISPLAY_NAME = "displayName"
+    const val PHONE_NUMBER = "phoneNumber"
 
     /**
      * Returns true if requesting location updates, otherwise returns false.
@@ -131,4 +138,24 @@ internal object SharedPreferenceUtil {
             Context.MODE_PRIVATE).edit {
             putBoolean(KEY_FOREGROUND_ENABLED, requestingLocationUpdates)
         }
+
+    fun saveDisplayNamePref(context: Context,displayName : String, phoneNumber : String){
+        context.getSharedPreferences(
+            context.getString(R.string.preference_file_key),
+            Context.MODE_PRIVATE).edit {
+            putString(DISPLAY_NAME, displayName)
+            putString(PHONE_NUMBER, phoneNumber)
+            apply()
+        }
+
+    }
+
+    fun getDisplayName(context: Context) : ForegroundData{
+        val name = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE).getString(
+            DISPLAY_NAME, null)
+        val phoneNumber = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE).getString(
+            PHONE_NUMBER, null)
+        return ForegroundData(name,phoneNumber)
+    }
+
 }

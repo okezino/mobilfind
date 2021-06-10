@@ -24,12 +24,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.decagon.mobifind.MainActivity
 import com.decagon.mobifind.R
+import com.decagon.mobifind.model.data.MobifindUser
+import com.decagon.mobifind.model.data.Track
 import com.decagon.mobifind.model.data.UserLocation
 import com.decagon.mobifind.utils.*
 import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.to
@@ -47,6 +51,9 @@ class MobifindLocationService : LifecycleService() {
 
     // FusedLocationProviderClient - Main class for receiving location updates.
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    private var firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+
     /*
  * Checks whether the bound activity has really gone away (foreground service with notification
  * created) or simply orientation change (no-op).
@@ -98,6 +105,7 @@ class MobifindLocationService : LifecycleService() {
 
         getLocationUpdates()
 
+        firestore.firestoreSettings = FirebaseFirestoreSettings.Builder().build()
         locationCallback = object : LocationCallback() {
             @SuppressLint("SimpleDateFormat")
             override fun onLocationResult(p0: LocationResult) {
@@ -118,11 +126,30 @@ class MobifindLocationService : LifecycleService() {
                         NOTIFICATION_ID,
                         generateNotification(currentLocation))
                 }
+             //   SharedPreferenceUtil.saveLocationLatitudePref(this@MobifindLocationService,currentLatLng)
             //    mobifindViewModel.saveUserLocationUpdates(userLocation)
+                val fore = SharedPreferenceUtil.getDisplayName(this@MobifindLocationService)
                 Log.d("Servicces", "onCreate: Services called ${currentLatLng.latitude}")
+                Log.d("ForegroundData", "onCreate: Services called ${fore.name}")
+                if(fore.phoneNumber != null && fore.name != null){
+                    val mobiUser = MobifindUser().apply {
+                        phoneNumber = fore.phoneNumber
+                        name = fore.name
+                    }
+                    firestore.collection("mobifindUsers")
+                        .document(fore.phoneNumber).collection("details").document(fore.phoneNumber).set(saveUser(mobiUser,userLocation))
+                }
+
                 Toast.makeText(applicationContext, "Location received: " + currentLatLng.latitude, Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    private fun saveUser(mobiUser: MobifindUser, userLocation : UserLocation): MobifindUser {
+        mobiUser.latitude = userLocation.latLng.latitude
+        mobiUser.longitude = userLocation.latLng.longitude
+        mobiUser.time = userLocation.time
+        return mobiUser
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

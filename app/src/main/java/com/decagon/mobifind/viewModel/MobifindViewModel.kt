@@ -82,7 +82,6 @@ class MobifindViewModel : ViewModel() {
                 _isSignedUpSuccess.value = true
             }
             .addOnFailureListener {
-
             }
     }
 
