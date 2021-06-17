@@ -3,7 +3,10 @@ package com.decagon.mobifind.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
+import android.provider.Settings
+import android.text.TextUtils
 import android.text.format.DateUtils
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
@@ -13,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.decagon.mobifind.MyAccessibilityService
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.adapter.UserAdapter
@@ -24,6 +28,8 @@ import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+
+private val ACCESSIBILITY_ENABLED = 1
 
 fun View.showSnackBar(message: String) {
     Snackbar.make(this, message, Snackbar.LENGTH_SHORT)
@@ -137,6 +143,7 @@ internal object SharedPreferenceUtil {
             context.getString(R.string.preference_file_key),
             Context.MODE_PRIVATE).edit {
             putBoolean(KEY_FOREGROUND_ENABLED, requestingLocationUpdates)
+            apply()
         }
 
     fun saveDisplayNamePref(context: Context,displayName : String, phoneNumber : String){
@@ -158,4 +165,33 @@ internal object SharedPreferenceUtil {
         return ForegroundData(name,phoneNumber)
     }
 
+    // Function to check if accessibility is enabled for the app
+    fun isAccessibilitySettingsOn(context: Context): Boolean {
+        var accessibilityEnabled = 0
+        val service: String = context.packageName
+            .toString() + "/" + MyAccessibilityService::class.java.canonicalName
+        try {
+            accessibilityEnabled = Settings.Secure.getInt(
+                context.applicationContext.contentResolver,
+                Settings.Secure.ACCESSIBILITY_ENABLED
+            )
+        } catch (e: Settings.SettingNotFoundException) {
+            Log.e("ACCESSIBILITY", "Error finding setting, default accessibility to not found: ")
+        }
+        val mStringColonSplitter = TextUtils.SimpleStringSplitter(':')
+        if (accessibilityEnabled == ACCESSIBILITY_ENABLED) {
+            val settingValue: String = Settings.Secure.getString(
+                context.applicationContext.contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            )
+            mStringColonSplitter.setString(settingValue)
+            while (mStringColonSplitter.hasNext()) {
+                val accessibilityService = mStringColonSplitter.next()
+                if (accessibilityService.equals(service, ignoreCase = true)) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
 }

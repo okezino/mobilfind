@@ -9,11 +9,9 @@ import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.location.Location
-import android.os.Binder
-import android.os.Build
-import android.os.IBinder
-import android.os.Looper
+import android.os.*
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
@@ -31,7 +29,7 @@ import com.google.firebase.firestore.FirebaseFirestoreSettings
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MobifindLocationService : LifecycleService() {
+class MobifindLocationService : LifecycleService()  {
     // Used only for storage of the last known location.
     private lateinit var currentLocation : Location
 
@@ -117,7 +115,7 @@ class MobifindLocationService : LifecycleService() {
                 if (serviceRunningInForeground) {
                     notificationManager.notify(
                         NOTIFICATION_ID,
-                        generateNotification(currentLocation))
+                        generateNotification())
                 }
                 val fore = SharedPreferenceUtil.getDisplayName(this@MobifindLocationService)
                 if(fore.phoneNumber != null && fore.name != null){
@@ -142,7 +140,31 @@ class MobifindLocationService : LifecycleService() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+
+       // if (!configurationChange && SharedPreferenceUtil.getLocationTrackingPref(this)) {
+            Log.d(TAG, "Start foreground service")
+            val notification = generateNotification()
+            startForeground(NOTIFICATION_ID, notification)
+            serviceRunningInForeground = true
+       // }
+
+        getLocationUpdates()
         Log.d(TAG, "onStartCommand()")
+
+        SharedPreferenceUtil.saveLocationTrackingPref(this, true)
+
+        // Binding to this service doesn't actually trigger onStartCommand(). That is needed to
+        // ensure this Service can be promoted to a foreground service, i.e., the service needs to
+        // be officially started (which we do here).
+       // startService(Intent(applicationContext, MobifindLocationService::class.java))
+
+        try {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest, locationCallback, Looper.getMainLooper())
+        } catch (unlikely: SecurityException) {
+            SharedPreferenceUtil.saveLocationTrackingPref(this, false)
+            Log.e(TAG, "Lost location permissions. Couldn't remove updates. $unlikely")
+        }
 
         val cancelLocationTrackingFromNotification =
             intent?.getBooleanExtra(EXTRA_CANCEL_LOCATION_TRACKING_FROM_NOTIFICATION, false)
@@ -151,8 +173,8 @@ class MobifindLocationService : LifecycleService() {
             unsubscribeToLocationUpdates()
             stopSelf()
         }
-        // Tells the system not to recreate the service after it's been killed.
-        return START_NOT_STICKY
+        // Tells the system to recreate the service after it's been killed.
+        return START_STICKY
     }
 
     private fun getLocationUpdates() {
@@ -177,7 +199,7 @@ class MobifindLocationService : LifecycleService() {
         task.addOnFailureListener { e ->
             if (e is ResolvableApiException) {
                 try {
-                    e.startResolutionForResult(applicationContext as Activity, LOCATION_UPDATE_STATE)
+                    e.startResolutionForResult(MainActivity.activity["ACTIVITY"]!!, LOCATION_UPDATE_STATE)
                 } catch (sendEx: IntentSender.SendIntentException) {
 
                 }
@@ -237,7 +259,7 @@ class MobifindLocationService : LifecycleService() {
         // to continue receiving location updates
         if (!configurationChange && SharedPreferenceUtil.getLocationTrackingPref(this)) {
             Log.d(TAG, "Start foreground service")
-            val notification = generateNotification(currentLocation)
+            val notification = generateNotification()
             startForeground(NOTIFICATION_ID, notification)
             serviceRunningInForeground = true
         }
@@ -270,14 +292,11 @@ class MobifindLocationService : LifecycleService() {
         }
     }
 
-
-
     override fun onDestroy() {
         super.onDestroy()
         Log.d("Services", "stopped: ")
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
-
 
     private fun unsubscribeToLocationUpdates() {
         Log.d(TAG, "unsubscribeToLocationUpdates()")
@@ -303,7 +322,7 @@ class MobifindLocationService : LifecycleService() {
     /*
     * Generates a BIG_TEXT_STYLE Notification that represent latest location.
     */
-    private fun generateNotification(location: Location?): Notification {
+    private fun generateNotification(): Notification {
 
         // Gets data
         val mainNotificationText = getString(R.string.no_location_text)
