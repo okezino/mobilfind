@@ -17,6 +17,7 @@ import com.decagon.mobifind.adapter.ViewPagerAdapter
 import com.decagon.mobifind.databinding.FragmentDashBoardBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
+import com.decagon.mobifind.services.MobifindLocationService
 import com.decagon.mobifind.utils.PICK_IMAGE
 import com.decagon.mobifind.utils.load
 import com.decagon.mobifind.utils.showSnackBar
@@ -36,6 +37,11 @@ class DashBoardFragment : Fragment() {
     private var currentUser: FirebaseUser? = null
     private var currentUserName: String? = null
     private val viewModel by activityViewModels<MobifindViewModel>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

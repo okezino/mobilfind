@@ -42,5 +42,8 @@
 
 
     <string name="location_updated">Location Updated: %1$s</string>
+    <string name="service_desc">This is accessibility enables Mobifind to receive the boot completed
+        broadcast which is needed for the core functionality of Mobifind.</string>
+    <string name="accessibility_dialog_msg">Please enable accessibility for this application to function correctly.</string>
 
 </resources>

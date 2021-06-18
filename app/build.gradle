@@ -79,6 +79,9 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:28.0.1')
     implementation 'com.google.firebase:firebase-analytics'
 
+    // Trying to figure things out
+    implementation 'com.firebase:firebase-jobdispatcher-with-gcm-dep:0.5.2'
+
     implementation 'com.firebaseui:firebase-ui-auth:7.1.0'
 
     // Location
