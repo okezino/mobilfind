@@ -26,10 +26,18 @@ import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.firebase.firestore.Query
+import com.google.rpc.context.AttributeContext
+import io.grpc.internal.SharedResourceHolder
 import java.text.SimpleDateFormat
 import java.util.*
 
 class MobifindLocationService : LifecycleService()  {
+
+    private val channelId = "12345"
+    private var chanCount = 1234
+    private val description = "Test Notification"
+    lateinit var builder: Notification.Builder
     // Used only for storage of the last known location.
     private lateinit var currentLocation : Location
 
@@ -56,6 +64,7 @@ class MobifindLocationService : LifecycleService()  {
     private val localBinder = LocalBinder()
 
     private lateinit var notificationManager: NotificationManager
+    private lateinit var notificationChannel : NotificationChannel
 
 
     companion object {
@@ -97,6 +106,7 @@ class MobifindLocationService : LifecycleService()  {
         getLocationUpdates()
 
         firestore.firestoreSettings = FirebaseFirestoreSettings.Builder().build()
+        val fore = SharedPreferenceUtil.getDisplayName(this@MobifindLocationService)
         locationCallback = object : LocationCallback() {
             @SuppressLint("SimpleDateFormat")
             override fun onLocationResult(p0: LocationResult) {
@@ -117,7 +127,7 @@ class MobifindLocationService : LifecycleService()  {
                         NOTIFICATION_ID,
                         generateNotification())
                 }
-                val fore = SharedPreferenceUtil.getDisplayName(this@MobifindLocationService)
+               // val fore = SharedPreferenceUtil.getDisplayName(this@MobifindLocationService)
                 if(fore.phoneNumber != null && fore.name != null){
                     val mobiUser = MobifindUser().apply {
                         phoneNumber = fore.phoneNumber
@@ -128,6 +138,41 @@ class MobifindLocationService : LifecycleService()  {
                 }
 
             }
+        }
+
+
+        fore.phoneNumber?.let { firestore.collection("mobifindUsers").document(it).collection("tracking").addSnapshotListener { value, error ->
+
+            val currentList = SharedPreferenceUtil.getTrackingSize(this)
+
+            if (value != null) {
+                if(value.documents.size > currentList){
+
+                    fore.phoneNumber?.let {
+                        firestore.collection("mobifindUsers").document(it).collection("tracking")
+                            .orderBy("timestamp",Query.Direction.DESCENDING).get().addOnSuccessListener {
+                                val name =  it.documents[0].get("name")
+                                notificationAlert(name.toString())
+                            }
+                    }
+
+                    SharedPreferenceUtil.saveTrackingSize(this, value.documents.size)
+                }else{
+                    SharedPreferenceUtil.saveTrackingSize(this, value.documents.size)
+                }
+
+            }
+
+
+        } }
+
+        fore.phoneNumber?.let {
+            firestore.collection("mobifindUsers").document(it).collection("tracking")
+                .orderBy("name").get().addOnSuccessListener {
+                   it.documents.forEach {
+                       Log.d("VIEW_MODEL", it.data?.get("name").toString())
+                   }
+                }
         }
     }
 
@@ -370,5 +415,30 @@ class MobifindLocationService : LifecycleService()  {
                 activityPendingIntent
             )
             .build()
+    }
+
+    @SuppressLint("UnspecifiedImmutableFlag")
+    fun notificationAlert(name: String){
+        chanCount++
+
+        // Sets up main Intent/Pending Intents for notification
+        val launchActivityIntent = Intent(this, MainActivity::class.java)
+        val activityPendingIntent = PendingIntent.getActivity(
+            this, 0, launchActivityIntent, 0)
+        val colour = resources.getColor(R.color.status_bar)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationChannel = NotificationChannel(channelId, description, NotificationManager .IMPORTANCE_HIGH)
+            notificationManager.createNotificationChannel(notificationChannel)
+            builder = Notification.Builder(applicationContext, channelId)
+
+        }
+        builder.setContentTitle(TRACKER_ALERT)
+            .setContentText(alertMessage(name))
+            .setSmallIcon(R.drawable.ic_baseline_circle_notifications_24)
+            .setContentIntent(activityPendingIntent)
+            .setColor(colour)
+
+        notificationManager.notify(chanCount, builder.build())
     }
 }

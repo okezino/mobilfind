@@ -60,7 +60,7 @@ class TrackerFragment : Fragment() {
         viewModel.isTrackerDeleted.observe(viewLifecycleOwner){
             if (it == true) {
                 track?.let { track ->
-                    view?.showSnackBar("${track.name} deleted from trackers successfully")
+              //      view?.showSnackBar("${track.name} deleted from trackers successfully")
                 }
             } else if (it == false) {
                 track?.let { track ->
