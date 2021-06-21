@@ -3,6 +3,7 @@ package com.decagon.mobifind.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
+import android.os.Parcelable
 import android.provider.Settings
 import android.text.TextUtils
 import android.text.format.DateUtils
@@ -21,6 +22,7 @@ import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.adapter.UserAdapter
 import com.decagon.mobifind.model.data.ForegroundData
+import com.decagon.mobifind.model.data.Track
 import com.decagon.mobifind.model.data.UserLocation
 import com.google.android.material.snackbar.Snackbar
 import com.google.type.LatLng
@@ -62,12 +64,19 @@ fun filterNumber(number: String): String {
 }
 
 fun inviteMessage(name: String): String {
-    return "Hello $name \n check out this cool location tracker app using the below Link +++"
+    return "Hi $name \nMobiFind helps you to get updated location of you and your love ones, download App by clicking the link below +++"
+}
+fun affirmationMessage(name:String) : String{
+    return "Are you sure you want to add $name to trackers list?"
 }
 
 fun denyMessage():String{
     return "Manually give Mobifind permission to your Contact, to enable you add Trackers to your list"
 }
+fun alertMessage(name: String) : String =  "$name has been added to your Tracker List"
+
+fun existingUserMessage(name: String) : String =  "$name is already on your Tracker List, Click   OK   to continue"
+
 fun sendSuccessMessage(name: String):String{
     return "$name has been successfully added to Tracker List"
 }
@@ -78,6 +87,17 @@ fun failedMessage():String{
 
 fun searchContact(s:String, contact:ArrayList<String>) : List<String>{
     return  contact.filter { it.contains(s, ignoreCase = true)}
+}
+
+fun validateUser(s:String, track :List<Track>) : Boolean{
+    var result = false
+    loo@for(i in track){
+        if(i.phoneNumber == s) {
+            result = true
+            break@loo
+        }
+    }
+    return result
 }
 
 fun isSignedUp(number: String, users: ArrayList<String>) = number in users
@@ -123,6 +143,8 @@ internal object SharedPreferenceUtil {
     const val LOCATION_LONGITUDE = "Location_longitude"
     const val DISPLAY_NAME = "displayName"
     const val PHONE_NUMBER = "phoneNumber"
+    const val TRACKING_NUMBER = "trackingNumber"
+    const val TRACKERS_LIST = "trackerlist"
 
     /**
      * Returns true if requesting location updates, otherwise returns false.
@@ -146,6 +168,22 @@ internal object SharedPreferenceUtil {
             apply()
         }
 
+    fun saveTrackingSize(context: Context,trackingSize : Int){
+        context.getSharedPreferences(
+            context.getString(R.string.preference_file_key),
+            Context.MODE_PRIVATE).edit {
+            putInt(TRACKING_NUMBER, trackingSize)
+            apply()
+        }
+
+    }
+
+    fun getTrackingSize(context: Context) : Int {
+        val trackingSize : Int = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE).getInt(
+            TRACKING_NUMBER, 0 )
+        return trackingSize
+    }
+
     fun saveDisplayNamePref(context: Context,displayName : String, phoneNumber : String){
         context.getSharedPreferences(
             context.getString(R.string.preference_file_key),
@@ -156,6 +194,16 @@ internal object SharedPreferenceUtil {
         }
 
     }
+//
+//    fun saveTrackers(context: Context,trackers : Track){
+//        context.getSharedPreferences(
+//            context.getString(R.string.preference_file_key),
+//            Context.MODE_PRIVATE).edit {
+//            putString(TRACKERS_LIST,trackers)
+//            apply()
+//        }
+//
+//    }
 
     fun getDisplayName(context: Context) : ForegroundData{
         val name = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE).getString(

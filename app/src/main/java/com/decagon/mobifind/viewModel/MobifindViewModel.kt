@@ -1,7 +1,9 @@
 package com.decagon.mobifind.viewModel
 
 import android.net.Uri
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,6 +14,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.storage.FirebaseStorage
 import com.decagon.mobifind.model.data.TrackState.*
+import com.google.firebase.firestore.Query
+import java.time.LocalDateTime
 
 class MobifindViewModel : ViewModel() {
     private var firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -229,7 +233,7 @@ class MobifindViewModel : ViewModel() {
             }
     }
 
-
+    // Method for setting trackers  in database
     private fun pushToTrackers(tracker: Track): Boolean {
         var result: Boolean = true
         documentReference.collection("trackers")
@@ -244,8 +248,10 @@ class MobifindViewModel : ViewModel() {
     }
 
 
+    // Method for setting tracking  in database
     fun pushToTracking(photo: String?) {
-        var tracker = Track(currentUserName.value, phoneNumber, photo)
+        val currentDateTime = System.currentTimeMillis()
+        var tracker = Track(currentUserName.value, phoneNumber, photo, currentDateTime.toString())
         userDocumentReference.collection("tracking")
             .document(phoneNumber)
             .set(tracker).addOnSuccessListener {

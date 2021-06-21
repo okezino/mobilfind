@@ -12,6 +12,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -20,6 +21,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.OnclickPhoneContact
 import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.databinding.FragmentPhoneContactBinding
@@ -28,7 +30,7 @@ import com.decagon.mobifind.viewModel.MobifindViewModel
 
 
 class PhoneContactFragment : Fragment(), OnclickPhoneContact {
-    // EasyPermissions.PermissionCallbacks
+
     private var _binding: FragmentPhoneContactBinding? = null
     private val binding
         get() = _binding!!
@@ -71,6 +73,7 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
         super.onViewCreated(view, savedInstanceState)
         binding.phoneContactBackBtn.setOnClickListener {
             findNavController().popBackStack()
+//            viewModel.getAllTrackers()
         }
 
         recyclerView = binding.recyclerviewPhoneFragment
@@ -117,17 +120,13 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
 
         viewModel.mobifindUser.observe(viewLifecycleOwner, Observer {
             if (it.contains(userNumber)) {
-                viewModel.setUpUserFirebase(userNumber)
-
-                if (viewModel.getTrackerPhotoInPhotos(userNumber, name)) {
-                    view?.showSnackBar(sendSuccessMessage(name))
-                    findNavController().popBackStack()
-                } else {
-                    view?.showSnackBar(failedMessage())
+                viewModel.myTrackers.observe(viewLifecycleOwner, Observer {
+                if(validateUser(userNumber,it)){
+                    showOldUserAlert(name)
+                }else {
+                    showAddAlert(name,userNumber)
                 }
-
-                viewModel.pushToTracking(photo)
-
+                })
 
             } else {
                 sendMessage(number, name)
@@ -168,6 +167,44 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
         recyclerView = binding.recyclerviewPhoneFragment
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = PhoneContactAdapter(this,contact)
+    }
+
+    private fun addToTrackerList(name : String, userNumber : String){
+        viewModel.setUpUserFirebase(userNumber)
+
+        if (viewModel.getTrackerPhotoInPhotos(userNumber, name)) {
+            view?.showSnackBar(sendSuccessMessage(name))
+            findNavController().popBackStack()
+        } else {
+            view?.showSnackBar(failedMessage())
+        }
+
+        viewModel.pushToTracking(photo)
+    }
+    private  fun showAddAlert(name: String,userNumber: String){
+        AlertDialog.Builder(requireContext(), R.style.MyDialogTheme)
+            .setTitle(ALERT_TITLE)
+            .setMessage(affirmationMessage(name))
+            .setPositiveButton("Yes") { _, _ ->
+                addToTrackerList(name,userNumber)
+
+            }.setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }.setCancelable(false)
+            .create()
+            .show()
+    }
+
+    private  fun showOldUserAlert(name: String){
+        AlertDialog.Builder(requireContext(), R.style.MyDialogTheme)
+            .setTitle(ALERT_TITLE)
+            .setMessage(existingUserMessage(name))
+            .setPositiveButton(OK) { dialog, _ ->
+                dialog.dismiss()
+
+            }.setCancelable(true)
+            .create()
+            .show()
     }
 
 
