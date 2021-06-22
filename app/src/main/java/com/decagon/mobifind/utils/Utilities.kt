@@ -3,7 +3,6 @@ package com.decagon.mobifind.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.location.Location
-import android.os.Parcelable
 import android.provider.Settings
 import android.text.TextUtils
 import android.text.format.DateUtils
@@ -19,13 +18,9 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.decagon.mobifind.MyAccessibilityService
 import com.decagon.mobifind.R
-import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.adapter.UserAdapter
-import com.decagon.mobifind.model.data.ForegroundData
 import com.decagon.mobifind.model.data.Track
-import com.decagon.mobifind.model.data.UserLocation
 import com.google.android.material.snackbar.Snackbar
-import com.google.type.LatLng
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -184,15 +179,13 @@ internal object SharedPreferenceUtil {
         return trackingSize
     }
 
-    fun saveDisplayNamePref(context: Context,displayName : String, phoneNumber : String){
+    fun savePhoneNumberInSharedPref(context: Context, phoneNumber : String?){
         context.getSharedPreferences(
             context.getString(R.string.preference_file_key),
             Context.MODE_PRIVATE).edit {
-            putString(DISPLAY_NAME, displayName)
             putString(PHONE_NUMBER, phoneNumber)
             apply()
         }
-
     }
 //
 //    fun saveTrackers(context: Context,trackers : Track){
@@ -205,12 +198,13 @@ internal object SharedPreferenceUtil {
 //
 //    }
 
-    fun getDisplayName(context: Context) : ForegroundData{
-        val name = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE).getString(
-            DISPLAY_NAME, null)
-        val phoneNumber = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE).getString(
-            PHONE_NUMBER, null)
-        return ForegroundData(name,phoneNumber)
+    fun getPhoneNumber(context: Context): String? {
+        return context.getSharedPreferences(
+            context.getString(R.string.preference_file_key),
+            Context.MODE_PRIVATE
+        ).getString(
+            PHONE_NUMBER, null
+        )
     }
 
     // Function to check if accessibility is enabled for the app

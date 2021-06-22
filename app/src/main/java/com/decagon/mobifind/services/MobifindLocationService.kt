@@ -11,7 +11,6 @@ import android.content.res.Configuration
 import android.location.Location
 import android.os.*
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
@@ -27,8 +26,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.firestore.Query
-import com.google.rpc.context.AttributeContext
-import io.grpc.internal.SharedResourceHolder
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -37,7 +34,7 @@ class MobifindLocationService : LifecycleService()  {
     private val channelId = "12345"
     private var chanCount = 1234
     private val description = "Test Notification"
-    lateinit var builder: Notification.Builder
+    private lateinit var builder: Notification.Builder
     // Used only for storage of the last known location.
     private lateinit var currentLocation : Location
 
@@ -62,6 +59,8 @@ class MobifindLocationService : LifecycleService()  {
     private var serviceRunningInForeground = false
 
     private val localBinder = LocalBinder()
+
+
 
     private lateinit var notificationManager: NotificationManager
     private lateinit var notificationChannel : NotificationChannel
@@ -106,7 +105,7 @@ class MobifindLocationService : LifecycleService()  {
         getLocationUpdates()
 
         firestore.firestoreSettings = FirebaseFirestoreSettings.Builder().build()
-        val fore = SharedPreferenceUtil.getDisplayName(this@MobifindLocationService)
+        var fore = SharedPreferenceUtil.getPhoneNumber(this@MobifindLocationService)
         locationCallback = object : LocationCallback() {
             @SuppressLint("SimpleDateFormat")
             override fun onLocationResult(p0: LocationResult) {
@@ -127,28 +126,27 @@ class MobifindLocationService : LifecycleService()  {
                         NOTIFICATION_ID,
                         generateNotification())
                 }
-               // val fore = SharedPreferenceUtil.getDisplayName(this@MobifindLocationService)
-                if(fore.phoneNumber != null && fore.name != null){
-                    val mobiUser = MobifindUser().apply {
-                        phoneNumber = fore.phoneNumber
-                        name = fore.name
-                    }
+                fore = SharedPreferenceUtil.getPhoneNumber(this@MobifindLocationService)
+                if(fore != null){
+                    Log.d("NewDebugging", "onLocationResult: $fore")
+                    val updateDetails = mapOf("latitude" to userLocation.latLng.latitude,"longitude" to userLocation.latLng.longitude,"time" to userLocation.time)
                     firestore.collection("mobifindUsers")
-                        .document(fore.phoneNumber).collection("details").document(fore.phoneNumber).set(saveUser(mobiUser,userLocation))
+                        .document(fore!!).collection("details").document(fore!!).update(
+                            updateDetails)
                 }
 
             }
         }
 
 
-        fore.phoneNumber?.let { firestore.collection("mobifindUsers").document(it).collection("tracking").addSnapshotListener { value, error ->
+        fore?.let { firestore.collection("mobifindUsers").document(it).collection("tracking").addSnapshotListener { value, error ->
 
             val currentList = SharedPreferenceUtil.getTrackingSize(this)
 
             if (value != null) {
                 if(value.documents.size > currentList){
 
-                    fore.phoneNumber?.let {
+                    fore?.let {
                         firestore.collection("mobifindUsers").document(it).collection("tracking")
                             .orderBy("timestamp",Query.Direction.DESCENDING).get().addOnSuccessListener {
                                 val name =  it.documents[0].get("name")
@@ -166,7 +164,7 @@ class MobifindLocationService : LifecycleService()  {
 
         } }
 
-        fore.phoneNumber?.let {
+        fore?.let {
             firestore.collection("mobifindUsers").document(it).collection("tracking")
                 .orderBy("name").get().addOnSuccessListener {
                    it.documents.forEach {
@@ -347,7 +345,6 @@ class MobifindLocationService : LifecycleService()  {
         Log.d(TAG, "unsubscribeToLocationUpdates()")
 
         try {
-            // TODO: Step 1.6, Unsubscribe to location changes.
             val removeTask = fusedLocationClient.removeLocationUpdates(locationCallback)
             removeTask.addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -367,6 +364,8 @@ class MobifindLocationService : LifecycleService()  {
     /*
     * Generates a BIG_TEXT_STYLE Notification that represent latest location.
     */
+    // Sets up main Intent/Pending Intents for notification
+
     private fun generateNotification(): Notification {
 
         // Gets data
@@ -377,7 +376,8 @@ class MobifindLocationService : LifecycleService()  {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             val notificationChannel = NotificationChannel(
-                NOTIFICATION_CHANNEL_ID, titleText, NotificationManager.IMPORTANCE_DEFAULT)
+                NOTIFICATION_CHANNEL_ID, titleText, NotificationManager.IMPORTANCE_LOW)
+            notificationChannel.setSound(null,null)
             notificationManager.createNotificationChannel(notificationChannel)
         }
 
@@ -389,8 +389,7 @@ class MobifindLocationService : LifecycleService()  {
         // Sets up main Intent/Pending Intents for notification
         val launchActivityIntent = Intent(this, MainActivity::class.java)
 
-        val cancelIntent = Intent(this, MobifindLocationService::class.java)
-        cancelIntent.putExtra(EXTRA_CANCEL_LOCATION_TRACKING_FROM_NOTIFICATION, true)
+        val colour = resources.getColor(R.color.status_bar)
 
 //        val servicePendingIntent = PendingIntent.getService(
 //            this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -403,17 +402,15 @@ class MobifindLocationService : LifecycleService()  {
             NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
 
         return notificationCompatBuilder
-            .setStyle(bigTextStyle)
             .setContentTitle(titleText)
             .setContentText(mainNotificationText)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_logo_name)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setOngoing(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .addAction(
-                R.drawable.ic_launch, getString(R.string.launch_activity),
-                activityPendingIntent
-            )
+            .setContentIntent(activityPendingIntent)
+            .setColor(colour)
+            .setSound(null)
             .build()
     }
 
@@ -425,7 +422,9 @@ class MobifindLocationService : LifecycleService()  {
         val launchActivityIntent = Intent(this, MainActivity::class.java)
         val activityPendingIntent = PendingIntent.getActivity(
             this, 0, launchActivityIntent, 0)
+
         val colour = resources.getColor(R.color.status_bar)
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationChannel = NotificationChannel(channelId, description, NotificationManager .IMPORTANCE_HIGH)
@@ -433,6 +432,7 @@ class MobifindLocationService : LifecycleService()  {
             builder = Notification.Builder(applicationContext, channelId)
 
         }
+
         builder.setContentTitle(TRACKER_ALERT)
             .setContentText(alertMessage(name))
             .setSmallIcon(R.drawable.ic_baseline_circle_notifications_24)
