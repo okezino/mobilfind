@@ -46,13 +46,6 @@ class WelcomeFragment : Fragment() {
     private val binding
         get() = _binding!!
 
-    private var foregroundOnlyLocationServiceBound = false
-
-    // Provides location updates for while-in-use feature.
-    private var foregroundOnlyLocationService: MobifindLocationService? = null
-
-    // Listens for location broadcasts from ForegroundOnlyLocationService.
-    private lateinit var foregroundOnlyBroadcastReceiver: ForegroundOnlyBroadcastReceiver
 
     private lateinit var sharedPreferences: SharedPreferences
 
@@ -64,56 +57,9 @@ class WelcomeFragment : Fragment() {
     private var imageUri: Uri? = null
     private var photo: Photo? = null
     private var user: FirebaseUser? = null
+
+    private var isSuccess = false
     private lateinit var logInNumber: String
-
-    // Monitors connection to the while-in-use service.
-    private val foregroundOnlyServiceConnection = object : ServiceConnection {
-
-        override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val binder = service as MobifindLocationService.LocalBinder
-            foregroundOnlyLocationService = binder.service
-            foregroundOnlyLocationServiceBound = true
-        }
-
-        override fun onServiceDisconnected(name: ComponentName) {
-            foregroundOnlyLocationService = null
-            foregroundOnlyLocationServiceBound = false
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        val serviceIntent = Intent(requireActivity(), MobifindLocationService::class.java)
-
-        requireActivity().bindService(serviceIntent, foregroundOnlyServiceConnection, Context.BIND_AUTO_CREATE)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        binding.fragmentWelcomeProgress.visibility = View.GONE
-        LocalBroadcastManager.getInstance(requireContext()).registerReceiver(
-            foregroundOnlyBroadcastReceiver,
-            IntentFilter(
-                MobifindLocationService.ACTION_FOREGROUND_ONLY_LOCATION_BROADCAST)
-        )
-    }
-
-    override fun onPause() {
-        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(
-            foregroundOnlyBroadcastReceiver
-        )
-        super.onPause()
-    }
-
-    override fun onStop() {
-        if (foregroundOnlyLocationServiceBound) {
-            requireActivity().unbindService(foregroundOnlyServiceConnection)
-            foregroundOnlyLocationServiceBound = false
-        }
-
-        super.onStop()
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -123,7 +69,7 @@ class WelcomeFragment : Fragment() {
         if (FirebaseAuth.getInstance().currentUser != null) {
             user = FirebaseAuth.getInstance().currentUser
             mobifindViewModel.setUpFirebaseUser(user!!)
-            foregroundOnlyLocationService?.subscribeToLocationUpdates()
+            requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
             findNavController().navigate(R.id.dashBoardFragment)
         }
 
@@ -131,10 +77,17 @@ class WelcomeFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        if(isSuccess){
+            binding.fragmentWelcomeProgress.visibility = View.VISIBLE
+        }else{
+            binding.fragmentWelcomeProgress.visibility = View.GONE
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        foregroundOnlyBroadcastReceiver = ForegroundOnlyBroadcastReceiver()
 
         sharedPreferences =
             requireActivity().getSharedPreferences(
@@ -154,7 +107,7 @@ class WelcomeFragment : Fragment() {
          */
         binding.signupBtn.setOnClickListener {
             if (foregroundPermissionApproved()) {
-                foregroundOnlyLocationService?.subscribeToLocationUpdates()
+                requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
                 signUpPhoneNumberFirebaseUI()
             } else {
                 requestForegroundPermissions(SIGN_UP_FIREBASE)
@@ -167,7 +120,7 @@ class WelcomeFragment : Fragment() {
         binding.loginBtn.setOnClickListener {
 
             if (foregroundPermissionApproved()) {
-                foregroundOnlyLocationService?.subscribeToLocationUpdates()
+                requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
                 logInUser()
             } else {
                 requestForegroundPermissions(LOG_IN_FIREBASE)
@@ -181,8 +134,11 @@ class WelcomeFragment : Fragment() {
             binding.mobileNumberEt.error = "Please enter your mobile number"
             return
         }
-        if (isSignedUp(filterNumber(number), mobifindUsers))
+        if (isSignedUp(filterNumber(number), mobifindUsers)){
             signInPhoneNumberFirebaseUI(filterNumber(number))
+            SharedPreferenceUtil.savePhoneNumberInSharedPref(requireActivity(),number)
+        }
+
         else {
             binding.forgotPasswordTv.showSnackBar("You need to sign up")
             binding.mobileNumberEt.text?.clear()
@@ -230,14 +186,16 @@ class WelcomeFragment : Fragment() {
             when (requestCode) {
                 AUTH_SIGN_IN -> {
                     user = FirebaseAuth.getInstance().currentUser
-                    foregroundOnlyLocationService?.subscribeToLocationUpdates()
+                    isSuccess = true
                     mobifindViewModel.setUpFirebaseUser(user!!)
                     showDialog()
 
                 }
                 AUTH_SIGN_UP -> {
                     user = FirebaseAuth.getInstance().currentUser
+                    isSuccess = true
                     mobifindViewModel.setUpFirebaseUser(user!!)
+
                     findNavController().navigate(R.id.dashBoardFragment)
                 }
                 LOCATION_UPDATE_STATE -> {
@@ -276,7 +234,7 @@ class WelcomeFragment : Fragment() {
             val mobiUser = MobifindUser().apply {
                 phoneNumber = user!!.phoneNumber.toString()
                 name = displayName
-                SharedPreferenceUtil.saveDisplayNamePref(requireActivity(),displayName,phoneNumber)
+                SharedPreferenceUtil.savePhoneNumberInSharedPref(requireActivity(),phoneNumber)
             }
 
             mobifindViewModel.apply {
@@ -290,6 +248,7 @@ class WelcomeFragment : Fragment() {
                     })
                 } else {
                     saveMobifindUser(mobiUser)
+                    binding.fragmentWelcomeProgress.visibility = View.VISIBLE
                     alertDialog.dismiss()
                 }
             }
@@ -311,7 +270,7 @@ class WelcomeFragment : Fragment() {
         when(requestCode){
             SIGN_UP_FIREBASE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    foregroundOnlyLocationService?.subscribeToLocationUpdates()
+                    requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
                     signUpPhoneNumberFirebaseUI()
                 } else {
                    showSettings()
@@ -319,7 +278,7 @@ class WelcomeFragment : Fragment() {
             }
             LOG_IN_FIREBASE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    foregroundOnlyLocationService?.subscribeToLocationUpdates()
+                    requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
                     logInUser()
                 } else {
                     showSettings()
@@ -415,26 +374,6 @@ class WelcomeFragment : Fragment() {
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                 requestCode
             )
-        }
-    }
-
-//    private fun logResultsToScreen(output: String) {
-//        Toast.makeText(requireContext(), output, Toast.LENGTH_SHORT).show()
-//    }
-
-    /**
-     * Receiver for location broadcasts from [ForegroundOnlyLocationService].
-     */
-     class ForegroundOnlyBroadcastReceiver : BroadcastReceiver() {
-
-        override fun onReceive(context: Context, intent: Intent) {
-            val location = intent.getParcelableExtra<UserLocation>(
-                MobifindLocationService.EXTRA_LOCATION
-            )
-
-            if (location != null) {
-              //  logResultsToScreen("Foreground location: ${location.latLng.longitude}")
-            }
         }
     }
 
