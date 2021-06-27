@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
                 .setTitle(R.string.accessibility_dialog_msg)
                 .setPositiveButton("OK") { _, _, ->
                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                    startActivity(intent)
+                    startActivityForResult(intent, 0)
                 }
                 .show()
         }
