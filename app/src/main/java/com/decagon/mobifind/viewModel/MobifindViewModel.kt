@@ -282,7 +282,7 @@ class MobifindViewModel : ViewModel() {
     }
 
     // Method for deleting tracker from trackers list and the user from the tracker's
-    // tracking list
+
     fun deleteFromTrackers(tPhoneNumber: String) {
         documentReference.collection(TRACKERS.state).document(tPhoneNumber).delete()
             .addOnSuccessListener {
