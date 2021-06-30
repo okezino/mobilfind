@@ -73,8 +73,9 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
         super.onViewCreated(view, savedInstanceState)
         binding.phoneContactBackBtn.setOnClickListener {
             findNavController().popBackStack()
-//            viewModel.getAllTrackers()
+
         }
+
 
         recyclerView = binding.recyclerviewPhoneFragment
 

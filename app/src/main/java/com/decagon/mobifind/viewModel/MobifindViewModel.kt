@@ -9,12 +9,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.decagon.mobifind.model.data.*
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
 import com.google.firebase.storage.FirebaseStorage
 import com.decagon.mobifind.model.data.TrackState.*
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.*
 import java.time.LocalDateTime
 
 class MobifindViewModel : ViewModel() {
@@ -57,6 +54,7 @@ class MobifindViewModel : ViewModel() {
 
     private val _myTrackers = MutableLiveData<List<Track>>(emptyList())
     val myTrackers = _myTrackers as LiveData<List<Track>>
+    val Tag = "MobifindViewModel"
 
     init {
         firestore.firestoreSettings = FirebaseFirestoreSettings.Builder().build()
@@ -305,5 +303,6 @@ class MobifindViewModel : ViewModel() {
             .addOnSuccessListener {
             }
     }
+
 
 }

@@ -163,21 +163,6 @@ internal object SharedPreferenceUtil {
             apply()
         }
 
-    fun saveTrackingSize(context: Context,trackingSize : Int){
-        context.getSharedPreferences(
-            context.getString(R.string.preference_file_key),
-            Context.MODE_PRIVATE).edit {
-            putInt(TRACKING_NUMBER, trackingSize)
-            apply()
-        }
-
-    }
-
-    fun getTrackingSize(context: Context) : Int {
-        val trackingSize : Int = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE).getInt(
-            TRACKING_NUMBER, 0 )
-        return trackingSize
-    }
 
     fun savePhoneNumberInSharedPref(context: Context, phoneNumber : String?){
         context.getSharedPreferences(
@@ -187,16 +172,7 @@ internal object SharedPreferenceUtil {
             apply()
         }
     }
-//
-//    fun saveTrackers(context: Context,trackers : Track){
-//        context.getSharedPreferences(
-//            context.getString(R.string.preference_file_key),
-//            Context.MODE_PRIVATE).edit {
-//            putString(TRACKERS_LIST,trackers)
-//            apply()
-//        }
-//
-//    }
+
 
     fun getPhoneNumber(context: Context): String? {
         return context.getSharedPreferences(
