@@ -17,14 +17,13 @@ import androidx.lifecycle.LifecycleService
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.decagon.mobifind.MainActivity
 import com.decagon.mobifind.R
+import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.UserLocation
 import com.decagon.mobifind.utils.*
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings
-import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -107,40 +106,24 @@ class MobifindLocationService : LifecycleService()  {
             }
         }
 
+        /**
+         * Listen to firebase change and send User notification
+         */
+        fore?.let {
+            firestore.collection("mobifindUsers").document(it).collection("tracking")
+                .addSnapshotListener { value, error ->
+                    fore?.let { currentUser ->
+                        firestore.collection("mobifindUsers").document(it).collection("details")
+                            .document(currentUser).get().addOnSuccessListener { doc ->
+                                val track = doc.toObject(MobifindUser::class.java)
+                                displayNotification(fore, value, track!!.trackListNum)
 
-        fore?.let { firestore.collection("mobifindUsers").document(it).collection("tracking").addSnapshotListener { value, error ->
-
-            val currentList = SharedPreferenceUtil.getTrackingSize(this)
-
-            if (value != null) {
-                if(value.documents.size > currentList){
-
-                    fore?.let {
-                        firestore.collection("mobifindUsers").document(it).collection("tracking")
-                            .orderBy("timestamp",Query.Direction.DESCENDING).get().addOnSuccessListener {
-                                val name =  it.documents[0].get("name")
-                                notificationAlert(name.toString())
                             }
                     }
 
-                    SharedPreferenceUtil.saveTrackingSize(this, value.documents.size)
-                }else{
-                    SharedPreferenceUtil.saveTrackingSize(this, value.documents.size)
-                }
-
-            }
-
-
-        } }
-
-        fore?.let {
-            firestore.collection("mobifindUsers").document(it).collection("tracking")
-                .orderBy("name").get().addOnSuccessListener {
-                   it.documents.forEach {
-                       Log.d("VIEW_MODEL", it.data?.get("name").toString())
-                   }
                 }
         }
+
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -269,30 +252,73 @@ class MobifindLocationService : LifecycleService()  {
     }
 
     @SuppressLint("UnspecifiedImmutableFlag")
-    fun notificationAlert(name: String){
-        chanCount++
+    fun notificationAlert(name: String) : Notification{
+        // Creates Notification Channel
+               chanCount++
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-        // Sets up main Intent/Pending Intents for notification
+            val notificationChannel = NotificationChannel(
+                channelId, description, NotificationManager.IMPORTANCE_LOW)
+            notificationChannel.setSound(null,null)
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+
+                // Sets up main Intent/Pending Intents for notification
         val launchActivityIntent = Intent(this, MainActivity::class.java)
         val activityPendingIntent = PendingIntent.getActivity(
             this, 0, launchActivityIntent, 0)
 
         val colour = resources.getColor(R.color.status_bar)
 
+        // Builds and issues the notification
+        val notificationCompatBuilder =
+            NotificationCompat.Builder(applicationContext, channelId)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationChannel = NotificationChannel(channelId, description, NotificationManager .IMPORTANCE_HIGH)
-            notificationManager.createNotificationChannel(notificationChannel)
-            builder = Notification.Builder(applicationContext, channelId)
-
-        }
-
-        builder.setContentTitle(TRACKER_ALERT)
+         return notificationCompatBuilder
+            .setContentTitle(TRACKER_ALERT)
             .setContentText(alertMessage(name))
             .setSmallIcon(R.drawable.ic_baseline_circle_notifications_24)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setContentIntent(activityPendingIntent)
             .setColor(colour)
+            .setSound(null)
+            .build()
 
-        notificationManager.notify(chanCount, builder.build())
+
+
+
     }
+
+    private fun updateTackList(fore: String?, list:Int){
+
+        fore?.let {
+            firestore.collection("mobifindUsers").document(it).collection("details")
+                .document(it).update("trackListNum", list)
+        }
+    }
+
+    private fun displayNotification(fore : String?, queryValue : QuerySnapshot? , currentValue : Int ){
+        if (queryValue != null) {
+            if(queryValue.documents.size > currentValue){
+
+                fore?.let {
+                    firestore.collection("mobifindUsers").document(it).collection("tracking")
+                        .orderBy("timestamp",Query.Direction.DESCENDING).get().addOnSuccessListener {
+                            val name =  it.documents[0].get("name")
+                            notificationManager.notify(
+                                chanCount,
+                                notificationAlert(name.toString()))
+
+                        }
+                }
+                updateTackList(fore, queryValue.documents.size)
+            }else{
+
+                updateTackList(fore,queryValue.documents.size)
+            }
+
+        }
+    }
+
+
 }

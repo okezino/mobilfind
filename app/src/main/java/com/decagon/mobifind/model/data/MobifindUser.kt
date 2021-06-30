@@ -6,5 +6,6 @@ data class MobifindUser(
     var phoneNumber: String = "",
     var photoUri: String? = null,
     var name: String? = null,
-    var time: String? = null
+    var time: String? = null,
+    var trackListNum : Int = 0
 )
