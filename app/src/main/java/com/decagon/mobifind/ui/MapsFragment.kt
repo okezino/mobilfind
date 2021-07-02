@@ -81,6 +81,9 @@ class MapsFragment : Fragment() {
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
 
+        if (NetworkLiveData.isNetworkAvailable()) view.showSnackBar("Connected", resources.getColor(R.color.green_900))
+        else view.showSnackBar("No internet connection",resources.getColor(R.color.red))
+
     }
 
     private fun setUpMap() {
@@ -97,8 +100,9 @@ class MapsFragment : Fragment() {
         }
         map.isMyLocationEnabled = true
         tracking.phoneNumber?.let { mapViewModel.getMapDetails(it) }
-        NetworkLiveData.observe(requireActivity(), { connected ->
+        NetworkLiveData.observe(viewLifecycleOwner, { connected ->
             if (connected) {
+                view?.showSnackBar("Connected",resources.getColor(R.color.green_900))
                 mapViewModel.details.observe(viewLifecycleOwner, {
                     val currentLatLng = it.latitude?.let { it1 ->
                         it.longitude?.let { it2 ->
@@ -136,7 +140,7 @@ class MapsFragment : Fragment() {
 
                 })
             } else {
-                view?.showSnackBar("No Internet Connection")
+                view?.showSnackBar("No Internet Connection",resources.getColor(R.color.red))
             }
         })
     }
@@ -153,7 +157,7 @@ class MapsFragment : Fragment() {
                 .snippet("Address: ${address[0].getAddressLine(0)}\n\n" +
                         "Last seen: ${timeConvert(lastSeen)}")
         map.clear()
-        map.addMarker(markerOptions)
+        map.addMarker(markerOptions).showInfoWindow()
     }
 
 

@@ -9,7 +9,7 @@ import android.net.NetworkRequest
 import androidx.lifecycle.LiveData
 
 object NetworkLiveData : LiveData<Boolean>() {
-    private lateinit var application: Application
+    private lateinit var application: Context
     private lateinit var networkRequest: NetworkRequest
 
     override fun onActive() {
@@ -17,7 +17,7 @@ object NetworkLiveData : LiveData<Boolean>() {
         getDetails()
     }
 
-    fun init(application: Application) {
+    fun init(application: Context) {
         this.application = application
         networkRequest = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
