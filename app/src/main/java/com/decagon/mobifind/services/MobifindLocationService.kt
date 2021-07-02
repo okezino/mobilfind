@@ -10,7 +10,9 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.location.Location
 import android.os.*
+import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
@@ -20,6 +22,7 @@ import com.decagon.mobifind.R
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.UserLocation
 import com.decagon.mobifind.utils.*
+import com.decagon.mobifind.utils.SharedPreferenceUtil.setServiceState
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
@@ -27,7 +30,11 @@ import com.google.firebase.firestore.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-class MobifindLocationService : LifecycleService()  {
+class MobifindLocationService : Service()  {
+
+    private var wakeLock: PowerManager.WakeLock? = null
+    private var isServiceStarted = false
+
 
     private val channelId = "12345"
     private var chanCount = 1234
@@ -68,6 +75,10 @@ class MobifindLocationService : LifecycleService()  {
         private const val NOTIFICATION_CHANNEL_ID = "mobifind_channel_01"
     }
 
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
     override fun onCreate() {
         super.onCreate()
 
@@ -90,17 +101,20 @@ class MobifindLocationService : LifecycleService()  {
 
                 // Updates notification content if this service is running as a foreground
                 // service.
-                if (serviceRunningInForeground) {
+                if (isServiceStarted) {
                     notificationManager.notify(
                         NOTIFICATION_ID,
                         generateNotification())
                 }
                 fore = SharedPreferenceUtil.getPhoneNumber(this@MobifindLocationService)
                 if(fore != null){
+                    Log.d(TAG, "sendLocationUpdates:  am called $fore ${userLocation.latLng.latitude}")
                     val updateDetails = mapOf("latitude" to userLocation.latLng.latitude,"longitude" to userLocation.latLng.longitude,"time" to userLocation.time)
                     firestore.collection("mobifindUsers")
                         .document(fore!!).collection("details").document(fore!!).update(
-                            updateDetails)
+                            updateDetails).addOnSuccessListener {
+                            Log.d(TAG, "onLocationResult: successfully updated")
+                        }
                 }
 
             }
@@ -128,26 +142,43 @@ class MobifindLocationService : LifecycleService()  {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-            val notification = generateNotification()
-            startForeground(NOTIFICATION_ID, notification)
-            serviceRunningInForeground = true
+//            val notification = generateNotification()
+//            startForeground(NOTIFICATION_ID, notification)
+//            serviceRunningInForeground = true
+//
+//        getLocationUpdates()
+//        Log.d(TAG, "onStartCommand()")
+//
+//        SharedPreferenceUtil.saveLocationTrackingPref(this, true)
+//
+//        // Binding to this service doesn't actually trigger onStartCommand(). That is needed to
+//        // ensure this Service can be promoted to a foreground service, i.e., the service needs to
+//        // be officially started (which we do here).
+//       // startService(Intent(applicationContext, MobifindLocationService::class.java))
+//
+//        try {
+//            fusedLocationClient.requestLocationUpdates(
+//                locationRequest, locationCallback, Looper.getMainLooper())
+//        } catch (unlikely: SecurityException) {
+//            SharedPreferenceUtil.saveLocationTrackingPref(this, false)
+//        }
 
-        getLocationUpdates()
-        Log.d(TAG, "onStartCommand()")
-
-        SharedPreferenceUtil.saveLocationTrackingPref(this, true)
-
-        // Binding to this service doesn't actually trigger onStartCommand(). That is needed to
-        // ensure this Service can be promoted to a foreground service, i.e., the service needs to
-        // be officially started (which we do here).
-       // startService(Intent(applicationContext, MobifindLocationService::class.java))
-
-        try {
-            fusedLocationClient.requestLocationUpdates(
-                locationRequest, locationCallback, Looper.getMainLooper())
-        } catch (unlikely: SecurityException) {
-            SharedPreferenceUtil.saveLocationTrackingPref(this, false)
+        //Never Ending Service
+        if(intent != null){
+            when(intent.action){
+                Actions.START.name -> startService()
+                Actions.STOP.name -> stopService()
+                else -> Log.d(TAG, "onStartCommand: This should never happen")
+            }
+        }else{
+            Log.d(
+                TAG,
+                "onStartCommand: with a null intent has probably been restarted by the system"
+            )
         }
+
+
+        // Tells the system to recreate the service after it's been killed.
 
         // Tells the system to recreate the service after it's been killed.
         return START_STICKY
@@ -211,6 +242,51 @@ class MobifindLocationService : LifecycleService()  {
         fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
+    private fun startService(){
+        if(isServiceStarted) return
+        val notification = generateNotification()
+        startForeground(NOTIFICATION_ID, notification)
+        Log.d(TAG, "startService: Starting the foreground service task")
+        Toast.makeText(this, "Service starting its task", Toast.LENGTH_SHORT).show()
+        isServiceStarted = true
+        setServiceState(this, ServiceState.STARTED)
+
+        getLocationUpdates()
+
+        wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+            newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MobifindService::lock").apply {
+                acquire()
+            }
+        }
+
+        try {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest, locationCallback, Looper.getMainLooper())
+        } catch (unlikely: SecurityException) {
+            SharedPreferenceUtil.saveLocationTrackingPref(this, false)
+        }
+    }
+
+    private fun stopService(){
+        Log.d(TAG, "Stopping the foreground service")
+        Toast.makeText(this, "Service stopping", Toast.LENGTH_SHORT).show()
+        try {
+            wakeLock?.let {
+                if (it.isHeld) {
+                    it.release()
+                }
+            }
+            stopForeground(true)
+            stopSelf()
+        } catch (e: Exception) {
+            Log.d(TAG, "Service stopped without being started: ${e.message}")
+        }
+        isServiceStarted = false
+        setServiceState(this, ServiceState.STOPPED)
+    }
+
+
+
     private fun generateNotification(): Notification {
 
         // Gets data
@@ -221,7 +297,7 @@ class MobifindLocationService : LifecycleService()  {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             val notificationChannel = NotificationChannel(
-                NOTIFICATION_CHANNEL_ID, titleText, NotificationManager.IMPORTANCE_LOW)
+                NOTIFICATION_CHANNEL_ID, titleText, NotificationManager.IMPORTANCE_HIGH)
             notificationChannel.setSound(null,null)
             notificationManager.createNotificationChannel(notificationChannel)
         }
@@ -319,6 +395,17 @@ class MobifindLocationService : LifecycleService()  {
 
         }
     }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        val restartServiceIntent = Intent(applicationContext, MobifindLocationService::class.java).also {
+            it.setPackage(packageName)
+        };
+        val restartServicePendingIntent: PendingIntent = PendingIntent.getService(this, 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT);
+        applicationContext.getSystemService(Context.ALARM_SERVICE);
+        val alarmService: AlarmManager = applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager;
+        alarmService.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 1000, restartServicePendingIntent);
+    }
+
 
 
 }

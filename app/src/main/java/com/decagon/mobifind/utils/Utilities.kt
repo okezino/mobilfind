@@ -2,6 +2,8 @@ package com.decagon.mobifind.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
+import android.graphics.drawable.Drawable
 import android.location.Location
 import android.provider.Settings
 import android.text.TextUtils
@@ -15,7 +17,11 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.Target
 import com.decagon.mobifind.MyAccessibilityService
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.UserAdapter
@@ -33,13 +39,41 @@ fun View.showSnackBar(message: String) {
         .show()
 }
 
+fun View.showSnackBar(message: String, color : Int){
+    Snackbar.make(this, message, Snackbar.LENGTH_SHORT).setTextColor(color)
+        .show()
+}
+
 fun View.showToast(message: String) {
     Toast.makeText(this.context, message, Toast.LENGTH_SHORT).show()
 }
 
 fun ImageView.load(imageUrl: String) {
     Glide.with(this.context)
-        .load(imageUrl).apply(
+        .load(imageUrl).listener(object : RequestListener<Drawable>{
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Drawable>?,
+                isFirstResource: Boolean
+            ): Boolean {
+                Toast.makeText(this@load.context, "LoadFailed", Toast.LENGTH_SHORT).show()
+                return false
+            }
+
+            override fun onResourceReady(
+                resource: Drawable?,
+                model: Any?,
+                target: Target<Drawable>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
+                Toast.makeText(this@load.context, "Testing Glide", Toast.LENGTH_SHORT).show()
+                return false
+            }
+
+        })
+        .apply(
             RequestOptions()
                 .placeholder(R.drawable.loading_status_animation)
                 .error(R.drawable.ic_error_image)
@@ -99,8 +133,8 @@ fun isSignedUp(number: String, users: ArrayList<String>) = number in users
 
 
 /**
-* Function to convert time to time ago. To be monitored...
-*/
+ * Function to convert time to time ago. To be monitored...
+ */
 @SuppressLint("SimpleDateFormat")
 fun timeConvert(string: String?): String {
     val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
@@ -140,6 +174,8 @@ internal object SharedPreferenceUtil {
     const val PHONE_NUMBER = "phoneNumber"
     const val TRACKING_NUMBER = "trackingNumber"
     const val TRACKERS_LIST = "trackerlist"
+    private const val name = "MOBIFINDSERVICE_KEY"
+    private const val key = "MOBIFINDSERVICE_STATE"
 
     /**
      * Returns true if requesting location updates, otherwise returns false.
@@ -212,4 +248,29 @@ internal object SharedPreferenceUtil {
         }
         return false
     }
+
+    fun setServiceState(context: Context, state: ServiceState) {
+        val sharedPrefs = getPreferences(context)
+        sharedPrefs.edit().let {
+            it.putString(key, state.name)
+            it.apply()
+        }
+    }
+
+    fun getServiceState(context: Context): ServiceState {
+        val sharedPrefs = getPreferences(context)
+        val value = sharedPrefs.getString(key, ServiceState.STOPPED.name)
+        return ServiceState.valueOf(value!!)
+    }
+
+    private fun getPreferences(context: Context): SharedPreferences {
+        return context.getSharedPreferences(name, 0)
+    }
 }
+
+enum class ServiceState{
+    STARTED,
+    STOPPED
+}
+
+

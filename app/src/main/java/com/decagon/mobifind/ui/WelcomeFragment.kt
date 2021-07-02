@@ -5,6 +5,7 @@ import android.app.Activity.RESULT_OK
 import android.content.*
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
@@ -36,8 +37,11 @@ import java.io.IOException
 import java.util.*
 import android.os.IBinder
 import android.provider.Settings
+import android.support.v4.media.session.PlaybackStateCompat
+import android.telephony.ServiceState
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.decagon.mobifind.BuildConfig
+import com.decagon.mobifind.utils.SharedPreferenceUtil.getServiceState
 import com.google.android.material.snackbar.Snackbar
 
 
@@ -69,7 +73,8 @@ class WelcomeFragment : Fragment() {
         if (FirebaseAuth.getInstance().currentUser != null) {
             user = FirebaseAuth.getInstance().currentUser
             mobifindViewModel.setUpFirebaseUser(user!!)
-            requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+           // requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+            actionOnService(Actions.START)
             findNavController().navigate(R.id.dashBoardFragment)
         }
 
@@ -107,7 +112,8 @@ class WelcomeFragment : Fragment() {
          */
         binding.signupBtn.setOnClickListener {
             if (foregroundPermissionApproved()) {
-                requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+             //   requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+                actionOnService(Actions.START)
                 signUpPhoneNumberFirebaseUI()
             } else {
                 requestForegroundPermissions(SIGN_UP_FIREBASE)
@@ -120,7 +126,8 @@ class WelcomeFragment : Fragment() {
         binding.loginBtn.setOnClickListener {
 
             if (foregroundPermissionApproved()) {
-                requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+              //  requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+                actionOnService(Actions.START)
                 logInUser()
             } else {
                 requestForegroundPermissions(LOG_IN_FIREBASE)
@@ -270,7 +277,8 @@ class WelcomeFragment : Fragment() {
         when(requestCode){
             SIGN_UP_FIREBASE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+                  //  requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+                    actionOnService(Actions.START)
                     signUpPhoneNumberFirebaseUI()
                 } else {
                    showSettings()
@@ -278,8 +286,9 @@ class WelcomeFragment : Fragment() {
             }
             LOG_IN_FIREBASE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
-                    logInUser()
+                   // requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+                    actionOnService(Actions.START)
+                       logInUser()
                 } else {
                     showSettings()
                 }
@@ -376,6 +385,21 @@ class WelcomeFragment : Fragment() {
             )
         }
     }
+
+    private fun actionOnService(action: Actions) {
+        if (getServiceState(requireActivity()) == com.decagon.mobifind.utils.ServiceState.STOPPED && action == Actions.STOP) return
+        Intent(requireActivity(), MobifindLocationService::class.java).also {
+            it.action = action.name
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Log.d("WelcomeFragment", "Starting the service in >=26 Mode")
+                requireContext().startForegroundService(it)
+                return
+            }
+            Log.d("WelcomeFragment", "Starting the service in < 26 Mode")
+            requireContext().startService(it)
+        }
+    }
+
 
 
 }
