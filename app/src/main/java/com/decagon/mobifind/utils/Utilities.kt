@@ -32,7 +32,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
-private val ACCESSIBILITY_ENABLED = 1
+private const val ACCESSIBILITY_ENABLED = 1
 
 fun View.showSnackBar(message: String) {
     Snackbar.make(this, message, Snackbar.LENGTH_SHORT)
@@ -57,7 +57,6 @@ fun ImageView.load(imageUrl: String) {
                 target: Target<Drawable>?,
                 isFirstResource: Boolean
             ): Boolean {
-                Toast.makeText(this@load.context, "LoadFailed", Toast.LENGTH_SHORT).show()
                 return false
             }
 
@@ -68,7 +67,6 @@ fun ImageView.load(imageUrl: String) {
                 dataSource: DataSource?,
                 isFirstResource: Boolean
             ): Boolean {
-                Toast.makeText(this@load.context, "Testing Glide", Toast.LENGTH_SHORT).show()
                 return false
             }
 

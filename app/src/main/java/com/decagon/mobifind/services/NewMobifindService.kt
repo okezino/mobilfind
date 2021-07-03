@@ -66,29 +66,44 @@ class NewMobifindService : Service() {
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val notification = generateNotification()
         startForeground(1, notification)
+
         fore = SharedPreferenceUtil.getPhoneNumber(this)
+        getLocationUpdates()
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        getLocationUpdates()
+        locationCallback = object : LocationCallback() {
+            @SuppressLint("SimpleDateFormat")
+            override fun onLocationResult(p0: LocationResult) {
+                super.onLocationResult(p0)
+                currentLocation = p0.lastLocation
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+                val currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude)
+                val userLocation = UserLocation(currentLatLng, time = dateFormat.format(Date()).toString())
+                if(fore != null){
 
-        receiveLocationCallBack()
+                    val updateDetails = mapOf("latitude" to userLocation.latLng.latitude,"longitude" to userLocation.latLng.longitude,"time" to userLocation.time)
+                    firestore.collection("mobifindUsers")
+                        .document(fore!!).collection("details").document(fore!!).update(
+                            updateDetails).addOnSuccessListener {
+                        }
+                }
+
+            }
+        }
+
+
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
+        fore = SharedPreferenceUtil.getPhoneNumber(this)
       //  Never Ending Service
         if(intent != null){
             when(intent.action){
                 Actions.START.name -> startService()
                 Actions.STOP.name -> stopService()
-                else -> Log.d("New Service", "onStartCommand: This should never happen")
             }
-        }else{
-            Log.d(
-                "New Service",
-                "onStartCommand: with a null intent has probably been restarted by the system"
-            )
         }
 
         return START_STICKY
@@ -138,31 +153,18 @@ class NewMobifindService : Service() {
 
     private fun startService(){
         if(isServiceStarted) return
-//        val notification = generateNotification()
-//        startForeground(1, notification)
-        Log.d("NewService", "startService: Starting the foreground service task")
-        Toast.makeText(this, "Service starting its task", Toast.LENGTH_SHORT).show()
         isServiceStarted = true
         setServiceState(this, ServiceState.STARTED)
+        startLocationUpdates()
+        receiveLocationCallBack()
         displayNewUserNotification()
 
         // we need this lock so our service gets not affected by Doze Mode
         acquireWakelock()
 
-      //  getLocationUpdates()
-
-
-//
-//        try {
-//            fusedLocationClient.requestLocationUpdates(
-//                locationRequest, locationCallback, Looper.getMainLooper())
-//        } catch (unlikely: SecurityException) {
-//            SharedPreferenceUtil.saveLocationTrackingPref(this, false)
-//        }
     }
 
     private fun stopService() {
-        Toast.makeText(this, "Service stopping", Toast.LENGTH_SHORT).show()
         try {
            releaseWakelock()
             stopForeground(true)
@@ -222,31 +224,11 @@ class NewMobifindService : Service() {
             locationCallback,
             Looper.getMainLooper()
         )
-        Log.d("Services", "getLocationUpdates: ")
 
     }
 
     private fun receiveLocationCallBack() {
-        locationCallback = object : LocationCallback() {
-            @SuppressLint("SimpleDateFormat")
-            override fun onLocationResult(p0: LocationResult) {
-                super.onLocationResult(p0)
-                currentLocation = p0.lastLocation
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
-                val currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude)
-                val userLocation = UserLocation(currentLatLng, time = dateFormat.format(Date()).toString())
-                if(fore != null){
-                    Log.d("New Service", "sendLocationUpdates:  am called $fore ${userLocation.latLng.latitude}")
-                    val updateDetails = mapOf("latitude" to userLocation.latLng.latitude,"longitude" to userLocation.latLng.longitude,"time" to userLocation.time)
-                    firestore.collection("mobifindUsers")
-                        .document(fore!!).collection("details").document(fore!!).update(
-                            updateDetails).addOnSuccessListener {
-                            Log.d("New Service", "onLocationResult: successfully updated")
-                        }
-                }
 
-            }
-        }
     }
 
     private fun displayNewUserNotification(){
@@ -254,7 +236,7 @@ class NewMobifindService : Service() {
          * Listen to firebase change and send User notification
          */
         fore?.let {
-            Log.d("New Service", "onStartCommand: Notification")
+
             firestore.collection("mobifindUsers").document(it).collection("tracking")
                 .addSnapshotListener { value, error ->
                     fore?.let { currentUser ->
@@ -331,6 +313,7 @@ class NewMobifindService : Service() {
             .setSmallIcon(R.drawable.ic_baseline_circle_notifications_24)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setContentIntent(activityPendingIntent)
+            .setAutoCancel(true)
             .setColor(colour)
             .setSound(null)
             .build()

@@ -1,14 +1,9 @@
 package com.decagon.mobifind.ui
 
 import android.app.Activity.RESULT_OK
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.content.ServiceConnection
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.IBinder
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
@@ -17,14 +12,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.fragment.findNavController
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.ViewPagerAdapter
 import com.decagon.mobifind.databinding.FragmentDashBoardBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
-import com.decagon.mobifind.services.MobifindLocationService
 import com.decagon.mobifind.services.NewMobifindService
 import com.decagon.mobifind.utils.Actions
 import com.decagon.mobifind.utils.PICK_IMAGE
@@ -47,30 +40,11 @@ class DashBoardFragment : Fragment() {
     private var currentUserName: String? = null
     private val viewModel by activityViewModels<MobifindViewModel>()
 
-    // Provides location updates for while-in-use feature.
-//    private var foregroundOnlyLocationService: MobifindLocationService? = null
-//    private var foregroundOnlyLocationServiceBound = false
-//
-//    // Monitors connection to the while-in-use service.
-//    private val foregroundOnlyServiceConnection = object : ServiceConnection {
-//        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-//            val binder = service as MobifindLocationService.LocalBinder
-//            foregroundOnlyLocationService = binder.service
-//            foregroundOnlyLocationServiceBound = true
-//        }
-//
-//        override fun onServiceDisconnected(name: ComponentName?) {
-//            foregroundOnlyLocationService = null
-//            foregroundOnlyLocationServiceBound = false
-//        }
-//    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Intent(requireActivity(), NewMobifindService::class.java).also {
             it.action = Actions.START.name
             ContextCompat.startForegroundService(requireActivity(), it)
-            //  foregroundOnlyLocationService?.subscribeToLocationUpdates()
         }
     }
 
@@ -94,12 +68,11 @@ class DashBoardFragment : Fragment() {
 
         // Sign user out of the app
         binding.logout.setOnClickListener {
-            AuthUI.getInstance().signOut(requireActivity()).addOnCompleteListener {
-                if (it.isSuccessful) {
-                    Intent(requireActivity(), NewMobifindService::class.java).also {
-                        it.action = Actions.STOP.name
-                        ContextCompat.startForegroundService(requireActivity(), it)
-                        //  foregroundOnlyLocationService?.subscribeToLocationUpdates()
+            AuthUI.getInstance().signOut(requireActivity()).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Intent(requireActivity(), NewMobifindService::class.java).also {startIntent->
+                        startIntent.action = Actions.STOP.name
+                        ContextCompat.startForegroundService(requireActivity(), startIntent)
                     }
                     findNavController().popBackStack()
                     findNavController().navigate(R.id.welcomeFragment)
@@ -193,31 +166,4 @@ class DashBoardFragment : Fragment() {
         }
         photo?.let { viewModel.save(mobiUser, it, currentUser!!) }
     }
-
-//    override fun onStart() {
-//        super.onStart()
-//
-//        val serviceIntent = Intent(requireActivity(), MobifindLocationService::class.java)
-//
-//        requireActivity().bindService(serviceIntent, foregroundOnlyServiceConnection, Context.BIND_AUTO_CREATE)
-//
-//    }
-
-//    override fun onPause() {
-//        LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(
-//            foregroundOnlyBroadcastReceiver
-//        )
-//        super.onPause()
-//    }
-//
-//    override fun onStop() {
-//        if (foregroundOnlyLocationServiceBound) {
-//            requireActivity().unbindService(foregroundOnlyServiceConnection)
-//            foregroundOnlyLocationServiceBound = false
-//        }
-//
-//        super.onStop()
-//    }
-
-
 }

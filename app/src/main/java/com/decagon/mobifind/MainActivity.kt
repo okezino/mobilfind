@@ -1,16 +1,13 @@
 package com.decagon.mobifind
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.decagon.mobifind.databinding.ActivityMainBinding
-import com.decagon.mobifind.services.MobifindLocationService
 import com.decagon.mobifind.utils.NetworkLiveData
 import com.decagon.mobifind.utils.SharedPreferenceUtil.isAccessibilitySettingsOn
 
@@ -46,11 +43,4 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.navController
     }
 
-    override fun onDestroy() {
-        Log.d("MobifindActivity", "onDestroy: OnDestroy is called")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(Intent(applicationContext, MobifindLocationService::class.java))
-        } else startService(Intent(applicationContext, MobifindLocationService::class.java))
-        super.onDestroy()
-    }
 }
