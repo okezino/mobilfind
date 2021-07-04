@@ -85,6 +85,7 @@ class WelcomeFragment : Fragment() {
 
 
         mobifindViewModel.getAllMobifindUsers()
+
         mobifindViewModel.mobifindUser.observe(requireActivity(), {
             mobifindUsers = it
         })

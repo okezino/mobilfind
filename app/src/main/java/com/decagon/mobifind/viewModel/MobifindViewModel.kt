@@ -216,7 +216,6 @@ class MobifindViewModel : ViewModel() {
         firestore.collection("mobifindUsers")
             .addSnapshotListener { value, error ->
                 if (error != null) {
-                    Log.w("Listening", "listenToSpecimens: Listen Failed")
                     return@addSnapshotListener
                 }
                 if (value != null) {

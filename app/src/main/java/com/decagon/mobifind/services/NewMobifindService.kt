@@ -9,7 +9,6 @@ import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.*
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.decagon.mobifind.App.Companion.CHANNEL_ID
@@ -155,7 +154,6 @@ class NewMobifindService : Service() {
         isServiceStarted = true
         setServiceState(this, ServiceState.STARTED)
         startLocationUpdates()
-        receiveLocationCallBack()
         displayNewUserNotification()
 
         // we need this lock so our service gets not affected by Doze Mode
@@ -180,7 +178,6 @@ class NewMobifindService : Service() {
             interval = 10000
             fastestInterval = 5000
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-            smallestDisplacement = 10f
         }
 
 
@@ -226,9 +223,6 @@ class NewMobifindService : Service() {
 
     }
 
-    private fun receiveLocationCallBack() {
-
-    }
 
     private fun displayNewUserNotification(){
         /**
