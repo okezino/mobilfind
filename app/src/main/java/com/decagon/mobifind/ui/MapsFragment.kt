@@ -50,7 +50,6 @@ class MapsFragment : Fragment() {
          */
         map = googleMap
         googleMap.uiSettings.isZoomControlsEnabled = true
-        Log.d("MapsFragment2", "Map Called: ")
         map.setInfoWindowAdapter(
             InfoWindowAdapter(
                 requireActivity()
@@ -155,7 +154,8 @@ class MapsFragment : Fragment() {
         val markerOptions =
             MarkerOptions().position(location).title("${name.trim()}${photoUri.trim()}")
                 .snippet("Address: ${address[0].getAddressLine(0)}\n\n" +
-                        "Last seen: ${timeConvert(lastSeen)}")
+                        "Last seen: ${if (timeConvert(lastSeen) == "0 minutes ago") "Currently Online"
+                        else timeConvert(lastSeen)}")
         map.clear()
         map.addMarker(markerOptions).showInfoWindow()
     }

@@ -10,7 +10,6 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.*
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.decagon.mobifind.App.Companion.CHANNEL_ID
@@ -235,6 +234,8 @@ class NewMobifindService : Service() {
         /**
          * Listen to firebase change and send User notification
          */
+        fore = SharedPreferenceUtil.getPhoneNumber(this)
+
         fore?.let {
 
             firestore.collection("mobifindUsers").document(it).collection("tracking")
@@ -243,7 +244,9 @@ class NewMobifindService : Service() {
                         firestore.collection("mobifindUsers").document(it).collection("details")
                             .document(currentUser).get().addOnSuccessListener { doc ->
                                 val track = doc.toObject(MobifindUser::class.java)
-                                displayNotification(fore, value, track!!.trackListNum)
+                                if (track != null) {
+                                    displayNotification(fore, value, track.trackListNum)
+                                }
 
                             }
                     }
@@ -291,8 +294,7 @@ class NewMobifindService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
             val notificationChannel = NotificationChannel(
-                channelId, description, NotificationManager.IMPORTANCE_LOW)
-            notificationChannel.setSound(null,null)
+                channelId, description, NotificationManager.IMPORTANCE_HIGH)
             notificationManager.createNotificationChannel(notificationChannel)
         }
 
@@ -315,7 +317,6 @@ class NewMobifindService : Service() {
             .setContentIntent(activityPendingIntent)
             .setAutoCancel(true)
             .setColor(colour)
-            .setSound(null)
             .build()
 
     }
