@@ -95,7 +95,6 @@ class NewMobifindService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        fore = SharedPreferenceUtil.getPhoneNumber(this)
       //  Never Ending Service
         if(intent != null){
             when(intent.action){
@@ -228,7 +227,6 @@ class NewMobifindService : Service() {
         /**
          * Listen to firebase change and send User notification
          */
-        fore = SharedPreferenceUtil.getPhoneNumber(this)
 
         fore?.let {
 

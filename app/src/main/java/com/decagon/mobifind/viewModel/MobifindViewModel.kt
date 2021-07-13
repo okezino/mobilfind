@@ -195,6 +195,9 @@ class MobifindViewModel : ViewModel() {
             }
     }
 
+    // Test method
+    fun isDocumentRefInitialized(): Boolean = this::documentReference.isInitialized
+
     fun getPhotoInPhotos() {
         documentReference.collection("photos")
             .document(phoneNumber).addSnapshotListener { value, error ->

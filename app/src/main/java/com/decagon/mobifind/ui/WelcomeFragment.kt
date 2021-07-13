@@ -122,7 +122,7 @@ class WelcomeFragment : Fragment() {
         }
         if (isSignedUp(filterNumber(number), mobifindUsers)) {
             signInPhoneNumberFirebaseUI(filterNumber(number))
-            SharedPreferenceUtil.savePhoneNumberInSharedPref(requireActivity(), number)
+
         } else {
             binding.forgotPasswordTv.showSnackBar("You need to sign up")
             binding.mobileNumberEt.text?.clear()
@@ -191,6 +191,7 @@ class WelcomeFragment : Fragment() {
                 AUTH_SIGN_UP -> {
                     user = FirebaseAuth.getInstance().currentUser
                     isSuccess = true
+                    SharedPreferenceUtil.savePhoneNumberInSharedPref(requireActivity(), user?.phoneNumber)
                     mobifindViewModel.setUpFirebaseUser(user!!)
 
                     findNavController().navigate(R.id.dashBoardFragment)

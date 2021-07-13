@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.decagon.mobifind.R
+import com.decagon.mobifind.SplashActivity
 import com.decagon.mobifind.adapter.ViewPagerAdapter
 import com.decagon.mobifind.databinding.FragmentDashBoardBinding
 import com.decagon.mobifind.model.data.MobifindUser
@@ -42,6 +43,9 @@ class DashBoardFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // If a lateint property in viewModel haven't been  initialized,
+        // navigate to SplashActivity
+        navigateToSplashActivity()
         Intent(requireActivity(), NewMobifindService::class.java).also {
             it.action = Actions.START.name
             ContextCompat.startForegroundService(requireActivity(), it)
@@ -132,6 +136,11 @@ class DashBoardFragment : Fragment() {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        navigateToSplashActivity()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -165,5 +174,14 @@ class DashBoardFragment : Fragment() {
             name = currentUserName
         }
         photo?.let { viewModel.save(mobiUser, it, currentUser!!) }
+    }
+
+    private fun navigateToSplashActivity() {
+        if (!viewModel.isDocumentRefInitialized()) {
+            Intent(requireActivity(), SplashActivity::class.java).also {
+                requireContext().startActivity(it)
+            }
+            activity?.finish()
+        }
     }
 }
