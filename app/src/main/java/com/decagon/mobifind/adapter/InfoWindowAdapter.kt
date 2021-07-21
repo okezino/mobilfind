@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import com.decagon.mobifind.R
+import com.decagon.mobifind.utils.load
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.Marker
 import com.squareup.picasso.Callback
@@ -40,22 +41,23 @@ class InfoWindowAdapter(context: Activity) :
         val userImage = contents.findViewById<ImageView>(R.id.profile_image)
         val photoUri = "https://${marker.title.split("https://")[1]}"
 
-        Picasso.with(userImage.context)
-            .load(photoUri)
-            .placeholder(R.drawable.loading_status_animation)
-            .error(R.drawable.ic_error_image)
-            .into(userImage, object : Callback {
-                override fun onSuccess() {
-                    if (marker.isInfoWindowShown) {
-                        marker.hideInfoWindow()
-                        marker.showInfoWindow()
-                    }
-                }
-
-                override fun onError() {
-
-                }
-            })
+//        Picasso.with(userImage.context)
+//            .load(photoUri)
+//            .placeholder(R.drawable.loading_status_animation)
+//            .error(R.drawable.ic_error_image)
+//            .into(userImage, object : Callback {
+//                override fun onSuccess() {
+//                    if (marker.isInfoWindowShown) {
+//                        marker.hideInfoWindow()
+//                        marker.showInfoWindow()
+//                    }
+//                }
+//
+//                override fun onError() {
+//
+//                }
+//            })
+        userImage.load(photoUri)
         return contents
 
     }

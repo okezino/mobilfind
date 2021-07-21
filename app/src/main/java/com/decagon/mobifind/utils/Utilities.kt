@@ -50,32 +50,8 @@ fun View.showToast(message: String) {
 
 fun ImageView.load(imageUrl: String) {
     Glide.with(this.context)
-        .load(imageUrl).listener(object : RequestListener<Drawable>{
-            override fun onLoadFailed(
-                e: GlideException?,
-                model: Any?,
-                target: Target<Drawable>?,
-                isFirstResource: Boolean
-            ): Boolean {
-                return false
-            }
-
-            override fun onResourceReady(
-                resource: Drawable?,
-                model: Any?,
-                target: Target<Drawable>?,
-                dataSource: DataSource?,
-                isFirstResource: Boolean
-            ): Boolean {
-                return false
-            }
-
-        })
-        .apply(
-            RequestOptions()
-                .placeholder(R.drawable.loading_status_animation)
-                .error(R.drawable.ic_error_image)
-        ).into(this)
+        .load(imageUrl)
+        .into(this)
 }
 
 fun initAdapter(adapter: UserAdapter, recyclerView: RecyclerView) {
