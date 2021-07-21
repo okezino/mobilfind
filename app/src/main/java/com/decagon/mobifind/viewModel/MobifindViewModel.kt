@@ -195,6 +195,9 @@ class MobifindViewModel : ViewModel() {
             }
     }
 
+    // Test method
+    fun isDocumentRefInitialized(): Boolean = this::documentReference.isInitialized
+
     fun getPhotoInPhotos() {
         documentReference.collection("photos")
             .document(phoneNumber).addSnapshotListener { value, error ->
@@ -216,7 +219,6 @@ class MobifindViewModel : ViewModel() {
         firestore.collection("mobifindUsers")
             .addSnapshotListener { value, error ->
                 if (error != null) {
-                    Log.w("Listening", "listenToSpecimens: Listen Failed")
                     return@addSnapshotListener
                 }
                 if (value != null) {

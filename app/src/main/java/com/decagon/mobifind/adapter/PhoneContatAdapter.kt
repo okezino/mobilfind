@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.decagon.mobifind.R
-import com.decagon.mobifind.model.data.Contact
 
 class PhoneContactAdapter(
     private var onStatusClicked: OnclickPhoneContact,

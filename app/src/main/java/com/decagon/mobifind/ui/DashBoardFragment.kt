@@ -9,15 +9,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.decagon.mobifind.R
+import com.decagon.mobifind.SplashActivity
 import com.decagon.mobifind.adapter.ViewPagerAdapter
 import com.decagon.mobifind.databinding.FragmentDashBoardBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
-import com.decagon.mobifind.services.MobifindLocationService
+import com.decagon.mobifind.services.NewMobifindService
+import com.decagon.mobifind.utils.Actions
 import com.decagon.mobifind.utils.PICK_IMAGE
 import com.decagon.mobifind.utils.load
 import com.decagon.mobifind.utils.showSnackBar
@@ -40,7 +43,13 @@ class DashBoardFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+        // If a lateint property in viewModel haven't been  initialized,
+        // navigate to SplashActivity
+        navigateToSplashActivity()
+        Intent(requireActivity(), NewMobifindService::class.java).also {
+            it.action = Actions.START.name
+            ContextCompat.startForegroundService(requireActivity(), it)
+        }
     }
 
     override fun onCreateView(
@@ -63,8 +72,12 @@ class DashBoardFragment : Fragment() {
 
         // Sign user out of the app
         binding.logout.setOnClickListener {
-            AuthUI.getInstance().signOut(requireActivity()).addOnCompleteListener {
-                if (it.isSuccessful) {
+            AuthUI.getInstance().signOut(requireActivity()).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Intent(requireActivity(), NewMobifindService::class.java).also {startIntent->
+                        startIntent.action = Actions.STOP.name
+                        ContextCompat.startForegroundService(requireActivity(), startIntent)
+                    }
                     findNavController().popBackStack()
                     findNavController().navigate(R.id.welcomeFragment)
                 }
@@ -123,6 +136,11 @@ class DashBoardFragment : Fragment() {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        navigateToSplashActivity()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -156,5 +174,14 @@ class DashBoardFragment : Fragment() {
             name = currentUserName
         }
         photo?.let { viewModel.save(mobiUser, it, currentUser!!) }
+    }
+
+    private fun navigateToSplashActivity() {
+        if (!viewModel.isDocumentRefInitialized()) {
+            Intent(requireActivity(), SplashActivity::class.java).also {
+                requireContext().startActivity(it)
+            }
+            activity?.finish()
+        }
     }
 }

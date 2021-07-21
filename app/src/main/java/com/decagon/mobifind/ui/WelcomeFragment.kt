@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,8 +22,6 @@ import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.FragmentWelcomeBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
-import com.decagon.mobifind.model.data.UserLocation
-import com.decagon.mobifind.services.MobifindLocationService
 import com.decagon.mobifind.utils.*
 import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.firebase.ui.auth.AuthUI
@@ -34,20 +31,17 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import java.io.IOException
 import java.util.*
-import android.os.IBinder
 import android.provider.Settings
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.decagon.mobifind.BuildConfig
+import com.decagon.mobifind.utils.SharedPreferenceUtil.getServiceState
 import com.google.android.material.snackbar.Snackbar
+import com.decagon.mobifind.services.NewMobifindService
 
 
 class WelcomeFragment : Fragment() {
     private var _binding: FragmentWelcomeBinding? = null
     private val binding
         get() = _binding!!
-
-
-    private lateinit var sharedPreferences: SharedPreferences
 
     private val mobifindViewModel by activityViewModels<MobifindViewModel>()
     private lateinit var alertDialog: AlertDialog
@@ -65,11 +59,10 @@ class WelcomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
         if (FirebaseAuth.getInstance().currentUser != null) {
             user = FirebaseAuth.getInstance().currentUser
             mobifindViewModel.setUpFirebaseUser(user!!)
-            requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
+            actionOnService(Actions.START)
             findNavController().navigate(R.id.dashBoardFragment)
         }
 
@@ -79,26 +72,21 @@ class WelcomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if(isSuccess){
+        if (isSuccess) {
             binding.fragmentWelcomeProgress.visibility = View.VISIBLE
-        }else{
+        } else {
             binding.fragmentWelcomeProgress.visibility = View.GONE
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        sharedPreferences =
-            requireActivity().getSharedPreferences(
-                getString(R.string.preference_file_key),
-                Context.MODE_PRIVATE
-            )
         user = FirebaseAuth.getInstance().currentUser
 
+
         mobifindViewModel.getAllMobifindUsers()
+
         mobifindViewModel.mobifindUser.observe(requireActivity(), {
-            Log.d("Mobifindders", "onViewCreated: $it")
             mobifindUsers = it
         })
 
@@ -107,7 +95,6 @@ class WelcomeFragment : Fragment() {
          */
         binding.signupBtn.setOnClickListener {
             if (foregroundPermissionApproved()) {
-                requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
                 signUpPhoneNumberFirebaseUI()
             } else {
                 requestForegroundPermissions(SIGN_UP_FIREBASE)
@@ -120,7 +107,6 @@ class WelcomeFragment : Fragment() {
         binding.loginBtn.setOnClickListener {
 
             if (foregroundPermissionApproved()) {
-                requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
                 logInUser()
             } else {
                 requestForegroundPermissions(LOG_IN_FIREBASE)
@@ -128,18 +114,16 @@ class WelcomeFragment : Fragment() {
         }
     }
 
-    private fun logInUser(){
+    private fun logInUser() {
         val number = binding.mobileNumberEt.text.toString().trim()
-        if(number.isEmpty()) {
+        if (number.isEmpty()) {
             binding.mobileNumberEt.error = "Please enter your mobile number"
             return
         }
-        if (isSignedUp(filterNumber(number), mobifindUsers)){
+        if (isSignedUp(filterNumber(number), mobifindUsers)) {
             signInPhoneNumberFirebaseUI(filterNumber(number))
-            SharedPreferenceUtil.savePhoneNumberInSharedPref(requireActivity(),number)
-        }
 
-        else {
+        } else {
             binding.forgotPasswordTv.showSnackBar("You need to sign up")
             binding.mobileNumberEt.text?.clear()
         }
@@ -187,6 +171,19 @@ class WelcomeFragment : Fragment() {
                 AUTH_SIGN_IN -> {
                     user = FirebaseAuth.getInstance().currentUser
                     isSuccess = true
+                    SharedPreferenceUtil.savePhoneNumberInSharedPref(requireActivity(), user?.phoneNumber)
+
+                    if (user?.phoneNumber?.let { isSignedUp(it, mobifindUsers) } == true) {
+                        isSuccess = false
+                        Snackbar.make(
+                            binding.welcomeTv,
+                            "You have previously signed up, please login to continue",
+                            Snackbar.LENGTH_INDEFINITE
+                        )
+                            .setAction("Ok") {}
+                            .show()
+                        return
+                    }
                     mobifindViewModel.setUpFirebaseUser(user!!)
                     showDialog()
 
@@ -194,12 +191,10 @@ class WelcomeFragment : Fragment() {
                 AUTH_SIGN_UP -> {
                     user = FirebaseAuth.getInstance().currentUser
                     isSuccess = true
+                    SharedPreferenceUtil.savePhoneNumberInSharedPref(requireActivity(), user?.phoneNumber)
                     mobifindViewModel.setUpFirebaseUser(user!!)
 
                     findNavController().navigate(R.id.dashBoardFragment)
-                }
-                LOCATION_UPDATE_STATE -> {
-                  //  startLocationUpdates()
                 }
                 PICK_IMAGE -> {
                     try {
@@ -234,7 +229,6 @@ class WelcomeFragment : Fragment() {
             val mobiUser = MobifindUser().apply {
                 phoneNumber = user!!.phoneNumber.toString()
                 name = displayName
-                SharedPreferenceUtil.savePhoneNumberInSharedPref(requireActivity(),phoneNumber)
             }
 
             mobifindViewModel.apply {
@@ -267,18 +261,16 @@ class WelcomeFragment : Fragment() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when(requestCode){
+        when (requestCode) {
             SIGN_UP_FIREBASE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
                     signUpPhoneNumberFirebaseUI()
                 } else {
-                   showSettings()
+                    showSettings()
                 }
             }
             LOG_IN_FIREBASE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    requireContext().startService(Intent(requireContext(), MobifindLocationService::class.java))
                     logInUser()
                 } else {
                     showSettings()
@@ -287,7 +279,7 @@ class WelcomeFragment : Fragment() {
         }
     }
 
-    private fun showSettings(){
+    private fun showSettings() {
         Snackbar.make(
             binding.loginBtn,
             R.string.permission_denied_explanation,
@@ -377,5 +369,12 @@ class WelcomeFragment : Fragment() {
         }
     }
 
+    private fun actionOnService(action: Actions) {
+        if (getServiceState(requireActivity()) == com.decagon.mobifind.utils.ServiceState.STOPPED && action == Actions.STOP) return
+        Intent(requireActivity(), NewMobifindService::class.java).also {
+            it.action = action.name
+            ContextCompat.startForegroundService(requireActivity(), it)
+        }
 
+    }
 }
