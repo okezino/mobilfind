@@ -342,7 +342,6 @@ class WelcomeFragment : Fragment() {
         )
     }
 
-    // TODO: Step 1.0, Review Permissions: Method requests permissions.
     private fun requestForegroundPermissions(requestCode: Int) {
         val provideRationale = foregroundPermissionApproved()
 
