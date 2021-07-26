@@ -211,11 +211,9 @@ enum class ServiceState{
 
 // Function to get UserPhoto
 fun getTrackerPhoto(phoneNumber: String, imageView: ImageView) {
-    Log.d("GetPhotoDetails", "function called with $phoneNumber")
     FirebaseFirestore.getInstance().collection("mobifindUsers").document(phoneNumber)
         .collection("photos").document(phoneNumber).addSnapshotListener { value, error ->
             if (error != null) {
-                Log.d("GetPhotoDetails", "error occurred")
                 return@addSnapshotListener
             }
             if (value != null) {
@@ -225,7 +223,6 @@ fun getTrackerPhoto(phoneNumber: String, imageView: ImageView) {
                 }
             }
         }
-    Log.d("GetPhotoDetails", "function call ended")
 }
 
 
