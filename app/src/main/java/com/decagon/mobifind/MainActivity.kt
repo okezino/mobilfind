@@ -10,6 +10,8 @@ import androidx.navigation.fragment.NavHostFragment
 import com.decagon.mobifind.databinding.ActivityMainBinding
 import com.decagon.mobifind.utils.NetworkLiveData
 import com.decagon.mobifind.utils.SharedPreferenceUtil.isAccessibilitySettingsOn
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.shreyaspatil.MaterialDialog.MaterialDialog
 
 
 class MainActivity : AppCompatActivity() {
@@ -26,13 +28,15 @@ class MainActivity : AppCompatActivity() {
 
         val accessEnabled = isAccessibilitySettingsOn(this)
         if (!accessEnabled) {
-            AlertDialog.Builder(this, R.style.MyDialogTheme)
+            MaterialDialog.Builder(this)
                 .setCancelable(false)
-                .setTitle(R.string.accessibility_dialog_msg)
-                .setPositiveButton("OK") { _, _, ->
+                .setMessage("Please enable accessibility for this application to function correctly.")
+                .setPositiveButton("OK") { dialogInterface, _, ->
                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                    startActivityForResult(intent, 0)
+                    startActivity(intent)
+                    dialogInterface.dismiss()
                 }
+                .build()
                 .show()
         }
         activity["ACTIVITY"] = this

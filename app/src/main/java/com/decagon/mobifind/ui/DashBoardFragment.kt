@@ -78,6 +78,7 @@ class DashBoardFragment : Fragment() {
                         startIntent.action = Actions.STOP.name
                         ContextCompat.startForegroundService(requireActivity(), startIntent)
                     }
+                    viewModel.setPhotoUriToNull()
                     findNavController().popBackStack()
                     findNavController().navigate(R.id.welcomeFragment)
                 }
@@ -106,7 +107,7 @@ class DashBoardFragment : Fragment() {
         }
 
         binding.userImage.setOnClickListener {
-            AlertDialog.Builder(requireContext(), R.style.MyDialogTheme)
+            AlertDialog.Builder(requireContext(), R.style.ImageDialog)
                 .setItems(
                     arrayOf("Update Photo", "View Photo")
                 ) { _, which ->
@@ -122,7 +123,7 @@ class DashBoardFragment : Fragment() {
                         }
                     }
                 }
-                .setNegativeButton("CANCEL") { _, _ -> }
+                .setNegativeButton("Cancel") { _, _ -> }
                 .create()
                 .show()
         }
