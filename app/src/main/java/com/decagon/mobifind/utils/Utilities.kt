@@ -27,6 +27,7 @@ import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.UserAdapter
 import com.decagon.mobifind.model.data.Track
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -206,6 +207,25 @@ internal object SharedPreferenceUtil {
 enum class ServiceState{
     STARTED,
     STOPPED
+}
+
+// Function to get UserPhoto
+fun getTrackerPhoto(phoneNumber: String, imageView: ImageView) {
+    Log.d("GetPhotoDetails", "function called with $phoneNumber")
+    FirebaseFirestore.getInstance().collection("mobifindUsers").document(phoneNumber)
+        .collection("photos").document(phoneNumber).addSnapshotListener { value, error ->
+            if (error != null) {
+                Log.d("GetPhotoDetails", "error occurred")
+                return@addSnapshotListener
+            }
+            if (value != null) {
+                val photo = value.data
+                if (photo != null) {
+                    imageView.load(photo["remoteUri"].toString())
+                }
+            }
+        }
+    Log.d("GetPhotoDetails", "function call ended")
 }
 
 

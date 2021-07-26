@@ -1,6 +1,7 @@
 package com.decagon.mobifind.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,7 @@ import com.decagon.mobifind.model.data.TrackState
 import com.decagon.mobifind.utils.initAdapter
 import com.decagon.mobifind.utils.showSnackBar
 import com.decagon.mobifind.viewModel.MobifindViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 import com.shreyaspatil.MaterialDialog.MaterialDialog
 
 
@@ -104,4 +106,5 @@ class TrackerFragment : Fragment() {
             }
         }
     }
+
 }
