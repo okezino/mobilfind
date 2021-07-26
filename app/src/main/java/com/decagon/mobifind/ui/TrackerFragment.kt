@@ -18,6 +18,7 @@ import com.decagon.mobifind.model.data.TrackState
 import com.decagon.mobifind.utils.initAdapter
 import com.decagon.mobifind.utils.showSnackBar
 import com.decagon.mobifind.viewModel.MobifindViewModel
+import com.shreyaspatil.MaterialDialog.MaterialDialog
 
 
 class TrackerFragment : Fragment() {
@@ -83,16 +84,17 @@ class TrackerFragment : Fragment() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val itemPosition = viewHolder.adapterPosition
                 track = adapter.getTrack(itemPosition)
-                AlertDialog.Builder(viewHolder.itemView.context, R.style.MyDialogTheme)
+                MaterialDialog.Builder(requireActivity())
                     .setTitle("Alert")
                     .setMessage("Are you sure you want to delete ${track!!.name} from your trackers list?")
-                    .setPositiveButton("Yes") { _, _ ->
-
+                    .setPositiveButton("Yes") { dialogInterface, _ ->
+                        dialogInterface.dismiss()
                        deleteTracker(track!!)
-                    }.setNegativeButton("Cancel") { _, _ ->
+                    }.setNegativeButton("Cancel") { dialogInterface, _ ->
+                        dialogInterface.dismiss()
                         adapter.notifyDataSetChanged()
                     }.setCancelable(false)
-                    .create()
+                    .build()
                     .show()
             }
         }

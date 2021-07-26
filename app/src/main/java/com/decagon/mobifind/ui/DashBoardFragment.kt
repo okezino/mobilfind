@@ -106,7 +106,7 @@ class DashBoardFragment : Fragment() {
         }
 
         binding.userImage.setOnClickListener {
-            AlertDialog.Builder(requireContext(), R.style.MyDialogTheme)
+            AlertDialog.Builder(requireContext(), R.style.ImageDialog)
                 .setItems(
                     arrayOf("Update Photo", "View Photo")
                 ) { _, which ->
@@ -122,7 +122,7 @@ class DashBoardFragment : Fragment() {
                         }
                     }
                 }
-                .setNegativeButton("CANCEL") { _, _ -> }
+                .setNegativeButton("Cancel") { _, _ -> }
                 .create()
                 .show()
         }

@@ -27,6 +27,7 @@ import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.databinding.FragmentPhoneContactBinding
 import com.decagon.mobifind.utils.*
 import com.decagon.mobifind.viewModel.MobifindViewModel
+import com.shreyaspatil.MaterialDialog.MaterialDialog
 
 
 class PhoneContactFragment : Fragment(), OnclickPhoneContact {
@@ -183,28 +184,29 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
         viewModel.pushToTracking(photo)
     }
     private  fun showAddAlert(name: String,userNumber: String){
-        AlertDialog.Builder(requireContext(), R.style.MyDialogTheme)
+        MaterialDialog.Builder(requireActivity())
             .setTitle(ALERT_TITLE)
             .setMessage(affirmationMessage(name))
-            .setPositiveButton("Yes") { _, _ ->
+            .setPositiveButton("Yes") { dialog, _ ->
+                dialog.dismiss()
                 addToTrackerList(name,userNumber)
 
             }.setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
             }.setCancelable(false)
-            .create()
+            .build()
             .show()
     }
 
     private  fun showOldUserAlert(name: String){
-        AlertDialog.Builder(requireContext(), R.style.MyDialogTheme)
+        MaterialDialog.Builder(requireActivity())
             .setTitle(ALERT_TITLE)
             .setMessage(existingUserMessage(name))
             .setPositiveButton(OK) { dialog, _ ->
                 dialog.dismiss()
 
             }.setCancelable(true)
-            .create()
+            .build()
             .show()
     }
 
