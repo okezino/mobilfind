@@ -132,13 +132,8 @@ class MobifindViewModel : ViewModel() {
                 //Update our cloud firestore with the public image URI
                 uploadPhotoDatabase(mobiUser, photo)
             }
-
         }
-        uploadTask.addOnFailureListener {
-
-        }
-
-
+        uploadTask.addOnFailureListener {}
     }
 
     private fun uploadPhotoDatabase(mobiUser: MobifindUser, photo: Photo) {
@@ -190,7 +185,6 @@ class MobifindViewModel : ViewModel() {
                         _currentUserName.value = it.toString()
                         return@addOnSuccessListener
                     }
-
                 }
             }
     }
@@ -306,6 +300,4 @@ class MobifindViewModel : ViewModel() {
             .addOnSuccessListener {
             }
     }
-
-
 }
