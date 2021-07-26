@@ -195,8 +195,11 @@ class MobifindViewModel : ViewModel() {
             }
     }
 
-    // Test method
+    // Check if a userDocumentReference has been initialized
     fun isDocumentRefInitialized(): Boolean = this::documentReference.isInitialized
+
+    // Method to set the photoUri value to null
+    fun setPhotoUriToNull() { _photoUri.value = null }
 
     fun getPhotoInPhotos() {
         documentReference.collection("photos")
@@ -261,7 +264,6 @@ class MobifindViewModel : ViewModel() {
             }
     }
 
-
     // Method for getting trackers and tracking from database
     fun getTrackList(path: TrackState) {
         documentReference.collection(path.state)
@@ -284,7 +286,6 @@ class MobifindViewModel : ViewModel() {
     }
 
     // Method for deleting tracker from trackers list and the user from the tracker's
-
     fun deleteFromTrackers(tPhoneNumber: String) {
         documentReference.collection(TRACKERS.state).document(tPhoneNumber).delete()
             .addOnSuccessListener {

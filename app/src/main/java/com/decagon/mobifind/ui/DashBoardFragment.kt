@@ -78,6 +78,7 @@ class DashBoardFragment : Fragment() {
                         startIntent.action = Actions.STOP.name
                         ContextCompat.startForegroundService(requireActivity(), startIntent)
                     }
+                    viewModel.setPhotoUriToNull()
                     findNavController().popBackStack()
                     findNavController().navigate(R.id.welcomeFragment)
                 }

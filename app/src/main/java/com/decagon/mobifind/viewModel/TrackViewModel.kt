@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.decagon.mobifind.model.data.MobifindUser
 
 
+// For Testing Only
 class TrackViewModel : ViewModel() {
     private val _tracking = MutableLiveData<List<MobifindUser>>(emptyList())
     private val _trackers = MutableLiveData<List<MobifindUser>>(emptyList())
