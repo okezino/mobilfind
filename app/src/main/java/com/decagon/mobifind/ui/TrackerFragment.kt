@@ -34,7 +34,7 @@ class TrackerFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         viewModel.getTrackList(TrackState.TRACKERS)
         _binding = FragmentTrackerBinding.inflate(layoutInflater)
         return binding.root
@@ -55,18 +55,6 @@ class TrackerFragment : Fragment() {
                 adapter.loadUsers(it)
                 binding.emptyList.visibility = View.GONE
                 binding.recyclerview.visibility = View.VISIBLE
-            }
-        }
-
-        viewModel.isTrackerDeleted.observe(viewLifecycleOwner){
-            if (it == true) {
-                track?.let { track ->
-              //      view?.showSnackBar("${track.name} deleted from trackers successfully")
-                }
-            } else if (it == false) {
-                track?.let { track ->
-                    view?.showSnackBar("Unable to delete ${track.name} from trackers. Please try again")
-                }
             }
         }
 
@@ -116,6 +104,4 @@ class TrackerFragment : Fragment() {
             }
         }
     }
-
-
 }

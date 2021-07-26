@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
                 .setMessage("Please enable accessibility for this application to function correctly.")
                 .setPositiveButton("OK") { dialogInterface, _, ->
                     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                    startActivityForResult(intent, 0)
+                    startActivity(intent)
                     dialogInterface.dismiss()
                 }
                 .build()
