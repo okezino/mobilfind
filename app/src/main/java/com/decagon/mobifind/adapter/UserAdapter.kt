@@ -15,6 +15,7 @@ class UserAdapter(private val clickListener: ClickListener? = null) :
 
     inner class UserViewHolder(private val binding: DashBoardRecyclerviewItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
+
         fun bind(user: Track) {
             clickListener?.let { clickListener ->
                 binding.root.setOnClickListener {
