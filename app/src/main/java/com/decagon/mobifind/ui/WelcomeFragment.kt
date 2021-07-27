@@ -32,6 +32,7 @@ import com.google.firebase.auth.FirebaseUser
 import java.io.IOException
 import java.util.*
 import android.provider.Settings
+import androidx.activity.OnBackPressedCallback
 import com.decagon.mobifind.BuildConfig
 import com.decagon.mobifind.utils.SharedPreferenceUtil.getServiceState
 import com.google.android.material.snackbar.Snackbar
@@ -54,6 +55,15 @@ class WelcomeFragment : Fragment() {
 
     private var isSuccess = false
     private lateinit var logInNumber: String
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+              requireActivity().finish()
+            }
+        })
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -86,9 +96,9 @@ class WelcomeFragment : Fragment() {
 
         mobifindViewModel.getAllMobifindUsers()
 
-        mobifindViewModel.mobifindUser.observe(requireActivity(), {
+        mobifindViewModel.mobifindUser.observe(requireActivity()) {
             mobifindUsers = it
-        })
+        }
 
         /**
          * Signs up a new user with their phoneNumber
@@ -376,4 +386,6 @@ class WelcomeFragment : Fragment() {
         }
 
     }
+
+    fun shouldInterceptBackPress() = true
 }

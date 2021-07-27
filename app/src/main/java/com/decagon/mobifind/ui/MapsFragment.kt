@@ -99,10 +99,10 @@ class MapsFragment : Fragment() {
         }
         map.isMyLocationEnabled = true
         tracking.phoneNumber?.let { mapViewModel.getMapDetails(it) }
-        NetworkLiveData.observe(viewLifecycleOwner, { connected ->
+        NetworkLiveData.observe(viewLifecycleOwner) { connected ->
             if (connected) {
-                view?.showSnackBar("Connected",resources.getColor(R.color.green_900))
-                mapViewModel.details.observe(viewLifecycleOwner, {
+                view?.showSnackBar("Connected", resources.getColor(R.color.green_900))
+                mapViewModel.details.observe(viewLifecycleOwner) {
                     val currentLatLng = it.latitude?.let { it1 ->
                         it.longitude?.let { it2 ->
                             LatLng(
@@ -137,11 +137,11 @@ class MapsFragment : Fragment() {
                         }
                     }
 
-                })
+                }
             } else {
-                view?.showSnackBar("No Internet Connection",resources.getColor(R.color.red))
+                view?.showSnackBar("No Internet Connection", resources.getColor(R.color.red))
             }
-        })
+        }
     }
 
     private fun placeMarkerOnMap(

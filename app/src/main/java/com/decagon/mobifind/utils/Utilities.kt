@@ -3,8 +3,6 @@ package com.decagon.mobifind.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.drawable.Drawable
-import android.location.Location
 import android.provider.Settings
 import android.text.TextUtils
 import android.text.format.DateUtils
@@ -12,16 +10,12 @@ import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.Target
 import com.decagon.mobifind.MyAccessibilityService
 import com.decagon.mobifind.R
 import com.decagon.mobifind.adapter.UserAdapter
@@ -58,6 +52,10 @@ fun initAdapter(adapter: UserAdapter, recyclerView: RecyclerView) {
     val divider = DividerItemDecoration(recyclerView.context, DividerItemDecoration.VERTICAL)
     recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
     recyclerView.adapter = adapter
+    val drawable = ContextCompat.getDrawable(recyclerView.context,R.drawable.divider)
+    drawable?.let {
+        divider.setDrawable(it)
+    }
     recyclerView.addItemDecoration(divider)
 }
 
@@ -133,6 +131,7 @@ internal object SharedPreferenceUtil {
     const val PHONE_NUMBER = "phoneNumber"
     private const val name = "MOBIFINDSERVICE_KEY"
     private const val key = "MOBIFINDSERVICE_STATE"
+    private const val onBoardViewed = "COMPLETED_ONBOARDING_PREF_NAME"
 
 
     fun savePhoneNumberInSharedPref(context: Context, phoneNumber : String?){
@@ -196,6 +195,19 @@ internal object SharedPreferenceUtil {
         val sharedPrefs = getPreferences(context)
         val value = sharedPrefs.getString(key, ServiceState.STOPPED.name)
         return ServiceState.valueOf(value!!)
+    }
+
+    fun setOnboardViewedState(context: Context, state : Boolean){
+        val sharedPrefs = getPreferences(context)
+        sharedPrefs.edit().let {
+            it.putBoolean(onBoardViewed,state)
+            it.apply()
+        }
+    }
+
+    fun getOnboardViewedState(context: Context): Boolean {
+        val sharedPrefs = getPreferences(context)
+        return sharedPrefs.getBoolean(onBoardViewed, false)
     }
 
     private fun getPreferences(context: Context): SharedPreferences {
