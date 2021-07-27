@@ -47,7 +47,7 @@
         <item name="colorAccent">@color/dark_blue</item>
         <item name="android:textColorPrimary">@color/dark_blue</item>
         <item name="textColorAlertDialogListItem">@color/dark_blue</item>
-        <item name="android:background">@color/status_bar</item>
+        <item name="android:background">@color/tool_bar</item>
         <item name="buttonBarNegativeButtonStyle">@style/MyAlertButton</item>
     </style>
 
