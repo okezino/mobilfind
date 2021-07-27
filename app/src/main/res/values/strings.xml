@@ -46,5 +46,13 @@
         broadcast which is needed for the core functionality of Mobifind.</string>
     <string name="accessibility_dialog_msg">Please enable accessibility for this application to function correctly.</string>
     <string name="tab_indicator">tabs indicator</string>
+    <string name="tracking">Tracking</string>
+    <string name="trackers">Trackers</string>
+    <string name="remove">Remove From List</string>
+    <string name="tracking_desc">Track contacts on mobifind in real-time on the map and navigate to where they are</string>
+    <string name="trackers_desc">Grant a contact permission to keep track of your position</string>
+    <string name="remove_desc">Swipe to delete from your tracker list</string>
+    <string name="add_to_trackers_list">Add to trackers list</string>
+    <string name="get_started">Get Started</string>
 
 </resources>

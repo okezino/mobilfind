@@ -14,11 +14,6 @@
         <!-- Customize your theme here. -->
     </style>
 
-    <style name="Widget.Onboarding.Button" parent="Widget.AppCompat.Button">
-        <item name="android:gravity">center</item>
-        <item name="android:textColor">@color/red</item>
-    </style>
-
     <style name="MyTabLayout" parent="Widget.Design.TabLayout">
         <item name="tabGravity">fill</item>
         <item name="tabMaxWidth">0dp</item>

@@ -2,10 +2,12 @@ package com.decagon.mobifind
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Button
 import androidx.viewpager2.widget.CompositePageTransformer
 import androidx.viewpager2.widget.MarginPageTransformer
 import androidx.viewpager2.widget.ViewPager2
 import com.decagon.mobifind.adapter.OnboardViewPagerAdapter
+import com.decagon.mobifind.model.data.Onboard
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlin.math.abs
@@ -17,11 +19,12 @@ class OnboardActivity : AppCompatActivity() {
 
         val viewPager = findViewById<ViewPager2>(R.id.myViewPager)
         val tabDots = findViewById<TabLayout>(R.id.tabDots)
-
+        val onboardItems = listOf(Onboard(getString(R.string.tracking),getString(R.string.tracking_desc),R.drawable.tracking),
+        Onboard(getString(R.string.trackers),getString(R.string.trackers_desc),R.drawable.tracker),Onboard(getString(R.string.remove),getString(R.string.remove_desc),R.drawable.delete))
 
       viewPager.apply {
             // Configures the adapter of the viewpager to the ViewPagerAdapter class created
-            adapter = OnboardViewPagerAdapter( 3)
+            adapter = OnboardViewPagerAdapter( onboardItems, this@OnboardActivity)
 
             // Sets the viewpager not to clip its children and resize
             clipToPadding = false

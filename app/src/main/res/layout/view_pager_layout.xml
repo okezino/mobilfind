@@ -10,20 +10,22 @@
     android:background="@drawable/green">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/pageTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="Tracking"
+        android:layout_marginEnd="16dp"
+        android:text= "@string/tracking"
         android:textColor="#FBF9F9"
-        android:textSize="48sp"
+        android:textSize="40sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/pageDesc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -32,29 +34,27 @@
         android:gravity="center_horizontal"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="Track contacts on mobifind in real-time on the map and navigate to where they are"
+        android:text="@string/tracking_desc"
         android:textColor="#EDEDED"
         android:textSize="16sp"
-        app:layout_constraintEnd_toEndOf="@+id/textView"
+        app:layout_constraintEnd_toEndOf="@+id/pageTitle"
         app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintStart_toStartOf="@+id/pageTitle"
+        app:layout_constraintTop_toBottomOf="@+id/pageTitle" />
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/pageImg"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="16dp"
-        android:alpha="0.7"
-        android:scaleType="centerCrop"
         app:layout_constraintBottom_toTopOf="@+id/guideline15"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2"
-        app:srcCompat="@drawable/homeland" />
+        app:layout_constraintTop_toBottomOf="@+id/pageDesc"
+        app:srcCompat="@drawable/tracker" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline15"
@@ -64,11 +64,11 @@
         app:layout_constraintGuide_percent="0.9411765" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/getStartedBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:text="Get Started"
+        android:text="@string/get_started"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

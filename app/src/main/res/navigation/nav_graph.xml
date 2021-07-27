@@ -46,4 +46,9 @@
             android:name="photoUri"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/onboardFragment"
+        android:name="com.decagon.mobifind.OnboardFragment"
+        android:label="activity_onboard"
+        tools:layout="@layout/activity_onboard" />
 </navigation>

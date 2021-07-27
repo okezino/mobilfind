@@ -4,6 +4,7 @@ package com.decagon.mobifind
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import androidx.appcompat.app.AppCompatActivity
@@ -15,7 +16,6 @@ class SplashActivity : AppCompatActivity() {
     lateinit var bottomAnimation : Animation
     lateinit var bottomTextAnimation : Animation
     lateinit var binding : ActivitySplashBinding
-    private val handler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,9 +40,11 @@ class SplashActivity : AppCompatActivity() {
         /**
          * handler for delaying the intent call to the Main activity
          */
+        val handler = Handler(mainLooper)
+
 
         handler.postDelayed({
-            val intent = Intent(this,OnboardActivity::class.java)
+            val intent = Intent(this,MainActivity::class.java)
             startActivity(intent)
             finish()
 

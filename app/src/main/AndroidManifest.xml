@@ -21,15 +21,8 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-    <uses-feature
-        android:name="android.software.leanback"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.touchscreen"
-        android:required="false" />
 
 
-    <queries />
 
     <application
         android:name=".App"
@@ -40,12 +33,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Mobifind"
         tools:ignore="MissingTvBanner">
-        <activity
-            android:name=".OnboardActivity"
-            android:enabled="true"
-            android:exported="true"
-            >
-        </activity>
 
         <service
             android:name=".services.NewMobifindService"
@@ -77,10 +64,12 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation"
-            android:exported="true"
             android:screenOrientation="portrait"
             >
         </activity>
+
+        <activity android:name=".OnboardActivity"
+           />
         <activity
             android:name=".SplashActivity"
             android:configChanges="orientation"
