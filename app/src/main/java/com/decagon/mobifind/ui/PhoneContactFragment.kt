@@ -27,6 +27,7 @@ import com.decagon.mobifind.adapter.PhoneContactAdapter
 import com.decagon.mobifind.databinding.FragmentPhoneContactBinding
 import com.decagon.mobifind.utils.*
 import com.decagon.mobifind.viewModel.MobifindViewModel
+import com.shreyaspatil.MaterialDialog.MaterialDialog
 
 
 class PhoneContactFragment : Fragment(), OnclickPhoneContact {
@@ -68,14 +69,12 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
         }
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.phoneContactBackBtn.setOnClickListener {
             findNavController().popBackStack()
 
         }
-
 
         recyclerView = binding.recyclerviewPhoneFragment
 
@@ -85,9 +84,7 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
         })
 
         binding.searchBar.addTextChangedListener(object : TextWatcher{
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-
-            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                handleTextChange(searchContact(s.toString(),contactList))
@@ -96,7 +93,6 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
             override fun afterTextChanged(s: Editable?) {
                 handleTextChange(searchContact(s.toString(),contactList))
             }
-
         })
     }
 
@@ -128,7 +124,6 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
                     showAddAlert(name,userNumber)
                 }
                 })
-
             } else {
                 sendMessage(number, name)
             }
@@ -183,36 +178,34 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
         viewModel.pushToTracking(photo)
     }
     private  fun showAddAlert(name: String,userNumber: String){
-        AlertDialog.Builder(requireContext(), R.style.MyDialogTheme)
+        MaterialDialog.Builder(requireActivity())
             .setTitle(ALERT_TITLE)
             .setMessage(affirmationMessage(name))
-            .setPositiveButton("Yes") { _, _ ->
+            .setPositiveButton("Yes") { dialog, _ ->
+                dialog.dismiss()
                 addToTrackerList(name,userNumber)
 
             }.setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
             }.setCancelable(false)
-            .create()
+            .build()
             .show()
     }
 
     private  fun showOldUserAlert(name: String){
-        AlertDialog.Builder(requireContext(), R.style.MyDialogTheme)
+        MaterialDialog.Builder(requireActivity())
             .setTitle(ALERT_TITLE)
             .setMessage(existingUserMessage(name))
             .setPositiveButton(OK) { dialog, _ ->
                 dialog.dismiss()
 
             }.setCancelable(true)
-            .create()
+            .build()
             .show()
     }
-
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
     }
-
-
 }

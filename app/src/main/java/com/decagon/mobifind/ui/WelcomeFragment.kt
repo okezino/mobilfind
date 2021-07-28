@@ -1,42 +1,45 @@
 package com.decagon.mobifind.ui
 
 import android.Manifest
+import android.annotation.TargetApi
 import android.app.Activity.RESULT_OK
-import android.content.*
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import androidx.activity.OnBackPressedCallback
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.decagon.mobifind.BuildConfig
 import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.FragmentWelcomeBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
+import com.decagon.mobifind.services.NewMobifindService
 import com.decagon.mobifind.utils.*
+import com.decagon.mobifind.utils.SharedPreferenceUtil.getServiceState
 import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.firebase.ui.auth.AuthUI
-import com.google.android.gms.location.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.shreyaspatil.MaterialDialog.MaterialDialog
 import java.io.IOException
-import java.util.*
-import android.provider.Settings
-import androidx.activity.OnBackPressedCallback
-import com.decagon.mobifind.BuildConfig
-import com.decagon.mobifind.utils.SharedPreferenceUtil.getServiceState
-import com.google.android.material.snackbar.Snackbar
-import com.decagon.mobifind.services.NewMobifindService
 
 
 class WelcomeFragment : Fragment() {
@@ -60,7 +63,7 @@ class WelcomeFragment : Fragment() {
         super.onCreate(savedInstanceState)
         activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-              requireActivity().finish()
+                requireActivity().finish()
             }
         })
     }
@@ -104,25 +107,34 @@ class WelcomeFragment : Fragment() {
          * Signs up a new user with their phoneNumber
          */
         binding.signupBtn.setOnClickListener {
-            if (foregroundPermissionApproved()) {
-                signUpPhoneNumberFirebaseUI()
-            } else {
-                requestForegroundPermissions(SIGN_UP_FIREBASE)
-            }
+            requestPermissionAndLoginUser(SIGN_UP_FIREBASE) { signUpPhoneNumberFirebaseUI() }
         }
 
         /**
          * An alternative login route
          */
         binding.loginBtn.setOnClickListener {
-
-            if (foregroundPermissionApproved()) {
-                logInUser()
-            } else {
-                requestForegroundPermissions(LOG_IN_FIREBASE)
-            }
+            requestPermissionAndLoginUser(LOG_IN_FIREBASE) { logInUser() }
         }
     }
+
+    private fun requestPermissionAndLoginUser(requestCode: Int, startUser: () -> Unit) {
+
+        if (foregroundPermissionApproved()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                if (backgroundPermissionApproved()) {
+                    startUser()
+                } else {
+                    requireContext().checkBackgroundLocationPermissionAPI30(LOG_IN_FIREBASE)
+                }
+            } else {
+                startUser()
+            }
+        } else {
+            requestForegroundPermissions(requestCode)
+        }
+    }
+
 
     private fun logInUser() {
         val number = binding.mobileNumberEt.text.toString().trim()
@@ -181,17 +193,18 @@ class WelcomeFragment : Fragment() {
                 AUTH_SIGN_IN -> {
                     user = FirebaseAuth.getInstance().currentUser
                     isSuccess = true
-                    SharedPreferenceUtil.savePhoneNumberInSharedPref(requireActivity(), user?.phoneNumber)
+                    SharedPreferenceUtil.savePhoneNumberInSharedPref(
+                        requireActivity(),
+                        user?.phoneNumber
+                    )
 
                     if (user?.phoneNumber?.let { isSignedUp(it, mobifindUsers) } == true) {
                         isSuccess = false
-                        Snackbar.make(
-                            binding.welcomeTv,
-                            "You have previously signed up, please login to continue",
-                            Snackbar.LENGTH_INDEFINITE
+                        generateMaterialDialog(requireActivity(), "You have previously signed up",
+                            "Continue to dashboard", "OK", "LOGIN",
+                            { findNavController().navigate(R.id.dashBoardFragment) }, null
                         )
-                            .setAction("Ok") {}
-                            .show()
+
                         return
                     }
                     mobifindViewModel.setUpFirebaseUser(user!!)
@@ -201,7 +214,10 @@ class WelcomeFragment : Fragment() {
                 AUTH_SIGN_UP -> {
                     user = FirebaseAuth.getInstance().currentUser
                     isSuccess = true
-                    SharedPreferenceUtil.savePhoneNumberInSharedPref(requireActivity(), user?.phoneNumber)
+                    SharedPreferenceUtil.savePhoneNumberInSharedPref(
+                        requireActivity(),
+                        user?.phoneNumber
+                    )
                     mobifindViewModel.setUpFirebaseUser(user!!)
 
                     findNavController().navigate(R.id.dashBoardFragment)
@@ -245,11 +261,11 @@ class WelcomeFragment : Fragment() {
                 if (imageUri == null) {
                     signUpUserWithoutPhoto(mobiUser)
                     alertDialog.dismiss()
-                    isSignedUp.observe(viewLifecycleOwner, {
+                    isSignedUp.observe(viewLifecycleOwner) {
                         if (it) {
                             findNavController().navigate(R.id.dashBoardFragment)
                         }
-                    })
+                    }
                 } else {
                     saveMobifindUser(mobiUser)
                     binding.fragmentWelcomeProgress.visibility = View.VISIBLE
@@ -274,14 +290,14 @@ class WelcomeFragment : Fragment() {
         when (requestCode) {
             SIGN_UP_FIREBASE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    signUpPhoneNumberFirebaseUI()
+                    requestPermissionAndLoginUser(SIGN_UP_FIREBASE) { signUpPhoneNumberFirebaseUI() }
                 } else {
                     showSettings()
                 }
             }
             LOG_IN_FIREBASE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    logInUser()
+                    requestPermissionAndLoginUser(LOG_IN_FIREBASE) { logInUser() }
                 } else {
                     showSettings()
                 }
@@ -290,25 +306,43 @@ class WelcomeFragment : Fragment() {
     }
 
     private fun showSettings() {
-        Snackbar.make(
-            binding.loginBtn,
-            R.string.permission_denied_explanation,
-            Snackbar.LENGTH_LONG
+        generateMaterialDialog(
+            requireActivity(), getString(R.string.permission_denied_explanation),
+            getString(R.string.permission_denied_walkthrough), "Continue", "Cancel",
+            positiveAction = { openSettings() },
+            negativeAction = null
         )
-            .setAction(R.string.settings) {
-                // Build intent that displays the App settings screen.
-                val intent = Intent()
-                intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                val uri = Uri.fromParts(
-                    "package",
-                    BuildConfig.APPLICATION_ID,
-                    null
+    }
+
+    private fun openSettings() {
+        val intent = Intent()
+        intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+        val uri = Uri.fromParts(
+            "package",
+            BuildConfig.APPLICATION_ID,
+            null
+        )
+        intent.data = uri
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+    }
+
+    // load the permission setting screen
+    @TargetApi(30)
+    private fun Context.checkBackgroundLocationPermissionAPI30(backgroundLocationRequestCode: Int) {
+        if (backgroundPermissionApproved()) return
+
+        generateMaterialDialog(
+            requireActivity(),
+            getString(R.string.background_location_permission_title),
+            getString(R.string.background_location_permission_message),
+            getString(R.string.yes))
+            {
+                requestPermissions(
+                    arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
+                    backgroundLocationRequestCode
                 )
-                intent.data = uri
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
             }
-            .show()
     }
 
     //=== IMAGE UPLPOAD =====//
@@ -334,7 +368,7 @@ class WelcomeFragment : Fragment() {
 
         photo?.let { mobifindViewModel.save(mobiUser, it, user!!) }
 
-        mobifindViewModel.uploadStatus.observe(viewLifecycleOwner, {
+        mobifindViewModel.uploadStatus.observe(viewLifecycleOwner) {
             if (it != null) {
                 if (it.isNotEmpty()) {
                     binding.fragmentWelcomeProgress.visibility = View.GONE
@@ -342,13 +376,21 @@ class WelcomeFragment : Fragment() {
                     findNavController().navigate(R.id.dashBoardFragment)
                 }
             }
-        })
+        }
     }
 
     private fun foregroundPermissionApproved(): Boolean {
         return PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.ACCESS_FINE_LOCATION
+        )
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun backgroundPermissionApproved(): Boolean {
+        return PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
         )
     }
 
@@ -364,10 +406,14 @@ class WelcomeFragment : Fragment() {
                 Snackbar.LENGTH_LONG
             )
                 .setAction(R.string.ok) {
-                    requestPermissions(
-                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                        requestCode
-                    )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        requireContext().checkBackgroundLocationPermissionAPI30(requestCode)
+                    } else {
+                        requestPermissions(
+                            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                            requestCode
+                        )
+                    }
                 }
                 .show()
         } else {
@@ -379,13 +425,11 @@ class WelcomeFragment : Fragment() {
     }
 
     private fun actionOnService(action: Actions) {
-        if (getServiceState(requireActivity()) == com.decagon.mobifind.utils.ServiceState.STOPPED && action == Actions.STOP) return
+        if (getServiceState(requireActivity()) == ServiceState.STOPPED && action == Actions.STOP) return
         Intent(requireActivity(), NewMobifindService::class.java).also {
             it.action = action.name
             ContextCompat.startForegroundService(requireActivity(), it)
         }
 
     }
-
-    fun shouldInterceptBackPress() = true
 }

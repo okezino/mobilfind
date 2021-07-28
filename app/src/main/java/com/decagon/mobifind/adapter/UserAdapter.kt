@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.decagon.mobifind.databinding.DashBoardRecyclerviewItemBinding
 import com.decagon.mobifind.model.data.Track
+import com.decagon.mobifind.utils.getTrackerPhoto
 import com.decagon.mobifind.utils.load
 
 class UserAdapter(private val clickListener: ClickListener? = null) :
@@ -22,10 +23,8 @@ class UserAdapter(private val clickListener: ClickListener? = null) :
             }
             binding.fullName.text = user.name
             binding.phoneNumber.text = user.phoneNumber
+            getTrackerPhoto(user.phoneNumber!!, binding.profileImage)
 
-            user.photoUri?.let {
-                binding.profileImage.load(it)
-            }
         }
     }
 
