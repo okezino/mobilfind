@@ -6,9 +6,11 @@ import android.provider.Settings
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.decagon.mobifind.databinding.ActivityMainBinding
 import com.decagon.mobifind.utils.NetworkLiveData
+import com.decagon.mobifind.utils.SharedPreferenceUtil
 import com.decagon.mobifind.utils.SharedPreferenceUtil.isAccessibilitySettingsOn
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.shreyaspatil.MaterialDialog.MaterialDialog
@@ -22,6 +24,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!SharedPreferenceUtil.getOnboardViewedState(this)){
+            startActivity(Intent(this, OnboardActivity::class.java))
+        }
         NetworkLiveData.init(this.application)
          binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -45,6 +50,7 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
 
         navController = navHostFragment.navController
+        navController.navigate(R.id.welcomeFragment)
     }
 
 }

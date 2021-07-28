@@ -15,7 +15,6 @@ class UserAdapter(private val clickListener: ClickListener? = null) :
 
     inner class UserViewHolder(private val binding: DashBoardRecyclerviewItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
-
         fun bind(user: Track) {
             clickListener?.let { clickListener ->
                 binding.root.setOnClickListener {
@@ -26,9 +25,6 @@ class UserAdapter(private val clickListener: ClickListener? = null) :
             binding.phoneNumber.text = user.phoneNumber
             getTrackerPhoto(user.phoneNumber!!, binding.profileImage)
 
-//            user.photoUri?.let {
-//                binding.profileImage.load(it)
-//            }
         }
     }
 

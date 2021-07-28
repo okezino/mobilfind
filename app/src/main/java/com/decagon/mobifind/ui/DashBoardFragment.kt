@@ -66,9 +66,9 @@ class DashBoardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         currentUser = FirebaseAuth.getInstance().currentUser
-        viewModel.userLoc.observe(requireActivity(),{
+        viewModel.userLoc.observe(requireActivity()) {
             viewModel.updateLocationDetails()
-        })
+        }
 
         // Sign user out of the app
         binding.logout.setOnClickListener {
