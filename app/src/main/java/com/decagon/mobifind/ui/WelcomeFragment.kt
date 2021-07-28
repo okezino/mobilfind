@@ -135,7 +135,6 @@ class WelcomeFragment : Fragment() {
         }
     }
 
-
     private fun logInUser() {
         val number = binding.mobileNumberEt.text.toString().trim()
         if (number.isEmpty()) {

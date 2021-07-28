@@ -11,6 +11,7 @@ import com.decagon.mobifind.OnboardActivity
 import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.ViewPagerLayoutBinding
 import com.decagon.mobifind.model.data.Onboard
+import com.decagon.mobifind.utils.SharedPreferenceUtil
 
 /**
  * An adapter class for the viewPager items
@@ -41,7 +42,7 @@ class OnboardViewPagerAdapter(private val items : List<Onboard>, private val act
         if (position == items.size- 1) holder.getStartedBtn.visibility = View.VISIBLE
 
        holder.getStartedBtn.setOnClickListener {
-         //  SharedPreferenceUtil.setOnboardViewedState(holder.button.context,true)
+            SharedPreferenceUtil.setOnboardViewedState(holder.getStartedBtn.context,true)
             activity.finish()
         }
 

@@ -59,5 +59,6 @@
     <string name="background_location_permission_message">This app collects location data to enable people whom you have granted permission to track you, keep track of your current position.</string>
     <string name="yes">Change to \"Allow all the time\"</string>
     <string name="no">Cancel</string>
+    <string name="onboard_image">onboardImage</string>
 
 </resources>

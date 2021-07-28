@@ -54,7 +54,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/pageDesc"
-        app:srcCompat="@drawable/tracker" />
+        app:srcCompat="@drawable/delete"
+        android:contentDescription="@string/onboard_image" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline15"
