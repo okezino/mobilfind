@@ -67,7 +67,7 @@ fun filterNumber(number: String): String {
     return result.filter { it == '+' || it.isDigit() }
 }
 
-fun inviteMessage(name: String): String = "Hi $name \nMobiFind helps you to get updated location of you and your love ones, download App by clicking the link below +++"
+fun inviteMessage(name: String): String = "Hi $name \nMobiFind helps you to get updated location of you and your love ones, download App by clicking the link below $BASE_URL"
 
 fun affirmationMessage(name:String) : String ="Are you sure you want to add $name to trackers list?"
 

@@ -68,7 +68,7 @@
     <string name="secondText">Some of the information we request from you are optional while others are very paramount in account opening and delivering our service. For example, you must provide a valid phone number to register as a new user to use our service and also permit the application access to collect your location from your device to fully utilize our service.</string>
     <string name="thirdText">More information about the categories and sources of information is provided below.</string>
     <string name="info">Information You Provide</string>
-    <string name="mpp">Mobifind Privacy Policy</string>
+    <string name="mpp"><u>Mobifind Privacy Policy</u></string>
     <string name="actInfo">Your Account Information</string>
     <string name="actInfoContent">To create a Mobifind account, you must provide a mobile phone number and a profile name, additional information can be provided to increase your user experience such as profile picture.</string>
     <string name="pc">Phone contacts</string>

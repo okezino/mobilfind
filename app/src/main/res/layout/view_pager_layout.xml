@@ -7,7 +7,7 @@
     android:layout_centerHorizontal="true"
     android:layout_gravity="center_horizontal"
     android:adjustViewBounds="true"
-    android:background="@drawable/green">
+    android:background="@color/status_bar">
 
     <TextView
         android:id="@+id/pageTitle"
