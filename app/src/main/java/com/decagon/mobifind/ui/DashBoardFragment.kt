@@ -20,10 +20,8 @@ import com.decagon.mobifind.databinding.FragmentDashBoardBinding
 import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.Photo
 import com.decagon.mobifind.services.NewMobifindService
-import com.decagon.mobifind.utils.Actions
-import com.decagon.mobifind.utils.PICK_IMAGE
-import com.decagon.mobifind.utils.load
-import com.decagon.mobifind.utils.showSnackBar
+import com.decagon.mobifind.utils.*
+import com.decagon.mobifind.utils.SharedPreferenceUtil
 import com.decagon.mobifind.viewModel.MobifindViewModel
 import com.firebase.ui.auth.AuthUI
 import com.google.android.material.tabs.TabLayoutMediator
@@ -52,6 +50,8 @@ class DashBoardFragment : Fragment() {
         }
     }
 
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -72,17 +72,8 @@ class DashBoardFragment : Fragment() {
 
         // Sign user out of the app
         binding.logout.setOnClickListener {
-            AuthUI.getInstance().signOut(requireActivity()).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Intent(requireActivity(), NewMobifindService::class.java).also {startIntent->
-                        startIntent.action = Actions.STOP.name
-                        ContextCompat.startForegroundService(requireActivity(), startIntent)
-                    }
-                    viewModel.setPhotoUriToNull()
-                    findNavController().popBackStack()
-                    findNavController().navigate(R.id.welcomeFragment)
-                }
-            }
+           generateMaterialDialog(requireActivity(), ALERT, logoutMessage(),YES,NO,
+               {logOut()},{})
         }
 
         viewModel.photoUri.observe(viewLifecycleOwner) {
@@ -134,6 +125,23 @@ class DashBoardFragment : Fragment() {
         TabLayoutMediator(binding.tabView, binding.viewPager) { tabs, position ->
             tabs.text = if (position == 0) "Tracking" else "Trackers"
         }.attach()
+
+    }
+
+    private fun logOut(){
+
+        AuthUI.getInstance().signOut(requireActivity()).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Intent(requireActivity(), NewMobifindService::class.java).also {startIntent->
+                    startIntent.action = Actions.STOP.name
+                    ContextCompat.startForegroundService(requireActivity(), startIntent)
+                    SharedPreferenceUtil.savePhoneNumberInSharedPref(requireContext(), null)
+                }
+                viewModel.setPhotoUriToNull()
+                findNavController().popBackStack()
+                findNavController().navigate(R.id.welcomeFragment)
+            }
+        }
 
     }
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="GeneralStyling" parent="TextAppearance.AppCompat">
+        <item name="android:textColor">@color/dark_blue</item>
+        <item name="android:layout_margin">1dp</item>
+
+
+    </style>
+
+    <style name="Headers" parent="GeneralStyling">
+        <item name="android:textSize">22sp</item>
+
+    </style>
+
+    <style name="SubHeaders" parent="GeneralStyling">
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="Sub_Header" parent="GeneralStyling">
+        <item name="android:textSize">18sp</item>
+
+
+    </style>
+
+    <style name="ContentBody" parent="GeneralStyling">
+        <item name="android:textSize">15sp</item>
+        <item name="android:layout_margin">15dp</item>
+
+
+    </style>
+</resources>

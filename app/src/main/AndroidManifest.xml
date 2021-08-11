@@ -15,15 +15,14 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission
         android:name="android.permission.BIND_ACCESSIBILITY_SERVICE"
         tools:ignore="ProtectedPermissions" />
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-
-
 
     <application
         android:name=".App"
@@ -34,6 +33,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Mobifind"
         tools:ignore="MissingTvBanner">
+        <activity
+            android:name=".PrivacyActivity"
+            android:exported="true" />
 
         <service
             android:name=".services.NewMobifindService"
@@ -65,12 +67,8 @@
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation"
-            android:screenOrientation="portrait"
-            >
-        </activity>
-
-        <activity android:name=".OnboardActivity"
-           />
+            android:screenOrientation="portrait"></activity>
+        <activity android:name=".OnboardActivity" />
         <activity
             android:name=".SplashActivity"
             android:configChanges="orientation"

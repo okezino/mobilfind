@@ -108,6 +108,7 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
             contactList.add("$name:$number")
         }
 
+
         cursor.close()
     }
 
@@ -156,7 +157,7 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
         getPhoneContact()
         recyclerView = binding.recyclerviewPhoneFragment
         recyclerView.layoutManager = LinearLayoutManager(context)
-        recyclerView.adapter = PhoneContactAdapter(this,contactList.toList())
+        recyclerView.adapter = PhoneContactAdapter(this,contactList.toSet().toList())
     }
 
     private fun handleTextChange( contact : List<String>) {

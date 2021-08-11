@@ -67,27 +67,24 @@ fun filterNumber(number: String): String {
     return result.filter { it == '+' || it.isDigit() }
 }
 
-fun inviteMessage(name: String): String {
-    return "Hi $name \nMobiFind helps you to get updated location of you and your love ones, download App by clicking the link below +++"
-}
-fun affirmationMessage(name:String) : String{
-    return "Are you sure you want to add $name to trackers list?"
-}
+fun inviteMessage(name: String): String = "Hi $name \nMobiFind helps you to get updated location of you and your love ones, download App by clicking the link below +++"
 
-fun denyMessage():String{
-    return "Manually give Mobifind permission to your Contact, to enable you add Trackers to your list"
-}
+fun affirmationMessage(name:String) : String ="Are you sure you want to add $name to trackers list?"
+
+fun logoutMessage():String = "Are you sure you want to Logout?"
+
+fun exitMessage(): String = "Are you sure you what to exit the app"
+
+fun denyMessage():String = "Manually give Mobifind permission to your Contact, to enable you add Trackers to your list"
+
 fun alertMessage(name: String) : String =  "$name has been added to your Tracker List"
 
 fun existingUserMessage(name: String) : String =  "$name is already on your Tracker List, Click   OK   to continue"
 
-fun sendSuccessMessage(name: String):String{
-    return "$name has been successfully added to Tracker List"
-}
+fun sendSuccessMessage(name: String):String = "$name has been successfully added to Tracker List"
 
-fun failedMessage():String{
-    return "Failed Operation: Try again"
-}
+fun failedMessage():String ="Failed Operation: Try again"
+
 
 fun searchContact(s:String, contact:ArrayList<String>) : List<String>{
     return  contact.filter { it.contains(s, ignoreCase = true)}

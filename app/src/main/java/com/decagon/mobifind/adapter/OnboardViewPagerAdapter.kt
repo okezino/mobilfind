@@ -1,5 +1,6 @@
 package com.decagon.mobifind.adapter
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.decagon.mobifind.OnboardActivity
+import com.decagon.mobifind.PrivacyActivity
 import com.decagon.mobifind.R
 import com.decagon.mobifind.databinding.ViewPagerLayoutBinding
 import com.decagon.mobifind.model.data.Onboard
@@ -42,7 +44,9 @@ class OnboardViewPagerAdapter(private val items : List<Onboard>, private val act
         if (position == items.size- 1) holder.getStartedBtn.visibility = View.VISIBLE
 
        holder.getStartedBtn.setOnClickListener {
-            SharedPreferenceUtil.setOnboardViewedState(holder.getStartedBtn.context,true)
+          //  SharedPreferenceUtil.setOnboardViewedState(holder.getStartedBtn.context,true)
+           var intent = Intent(activity,PrivacyActivity::class.java)
+           activity.startActivity(intent)
             activity.finish()
         }
 

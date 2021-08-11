@@ -9,6 +9,7 @@ import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.*
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.decagon.mobifind.App.Companion.CHANNEL_ID
@@ -18,6 +19,7 @@ import com.decagon.mobifind.model.data.MobifindUser
 import com.decagon.mobifind.model.data.UserLocation
 import com.decagon.mobifind.utils.*
 import com.decagon.mobifind.utils.SharedPreferenceUtil
+import com.decagon.mobifind.utils.SharedPreferenceUtil.savePhoneNumberInSharedPref
 import com.decagon.mobifind.utils.SharedPreferenceUtil.setServiceState
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
@@ -50,6 +52,7 @@ class NewMobifindService : Service() {
     private val channelId = "12345"
     private var chanCount = 1234
     private val description = "Test Notification"
+    private val TAG = "NEWMOBSERVICE"
 
     private var firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     private var fore: String? = null
@@ -165,11 +168,15 @@ class NewMobifindService : Service() {
            releaseWakelock()
             stopForeground(true)
             stopSelf()
+            Log.d(TAG, "stopService: ")
         } catch (e: Exception) {
 
         }
         isServiceStarted = false
         setServiceState(this, ServiceState.STOPPED)
+
+        Log.d(TAG, fore.toString())
+
     }
 
     private fun getLocationUpdates() {
@@ -228,16 +235,16 @@ class NewMobifindService : Service() {
          * Listen to firebase change and send User notification
          */
 
-        fore?.let {
+        SharedPreferenceUtil.getPhoneNumber(this)?.let {
 
             firestore.collection("mobifindUsers").document(it).collection("tracking")
                 .addSnapshotListener { value, error ->
-                    fore?.let { currentUser ->
+                    SharedPreferenceUtil.getPhoneNumber(this)?.let { currentUser ->
                         firestore.collection("mobifindUsers").document(it).collection("details")
                             .document(currentUser).get().addOnSuccessListener { doc ->
                                 val track = doc.toObject(MobifindUser::class.java)
                                 if (track != null) {
-                                    displayNotification(fore, value, track.trackListNum)
+                                    displayNotification(SharedPreferenceUtil.getPhoneNumber(this), value, track.trackListNum)
                                 }
 
                             }
@@ -282,6 +289,7 @@ class NewMobifindService : Service() {
     @SuppressLint("UnspecifiedImmutableFlag")
     fun notificationAlert(name: String) : Notification{
         // Creates Notification Channel
+        
         chanCount++
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
