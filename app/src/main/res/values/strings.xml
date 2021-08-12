@@ -62,7 +62,7 @@
     <string name="onboard_image">onboardImage</string>
     <string name="agree">Agree</string>
     <string name="disagree">Disagree</string>
-    <string name="last_">Last updated: August 10, 2021. We have updated our Privacy Policy. Among other clarifying changes, we have added more details about the information we collect and how it\'s used, including clarifications related to, for example, collection of user content information, use of data for verification, ad related choices, data sharing with third party services, and data storage/processing practices.</string>
+    <string name="last_">Last updated: August 10, 2021. The privacy Policy on mobifind is carefully being review, changes and updates are made when due, policy change on user geolocation, Among other clarifying changes, we have added more details about the information we collect and how it\'s used, information related to the following,   collection of user content information, use of data for verification, ad related choices, data sharing with third party services, and data storage/processing practices.</string>
     <string name="iwc">Information we Collect</string>
     <string name="firstiwc">In order to effectively use the Mobifind application, we collect some information to operate and provide support as regards services we provide.</string>
     <string name="secondText">Some of the information we request from you are optional while others are very paramount in account opening and delivering our service. For example, you must provide a valid phone number to register as a new user to use our service and also permit the application access to collect your location from your device to fully utilize our service.</string>
