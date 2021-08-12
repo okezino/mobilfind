@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         if (!SharedPreferenceUtil.getOnboardViewedState(this)){
             startActivity(Intent(this, OnboardActivity::class.java))
+            finish()
         }
         NetworkLiveData.init(this.application)
          binding = ActivityMainBinding.inflate(layoutInflater)

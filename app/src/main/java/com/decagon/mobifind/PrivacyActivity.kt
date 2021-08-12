@@ -30,12 +30,12 @@ class PrivacyActivity : AppCompatActivity() {
     private fun existApp(){
 
         finish()
-        exitProcess(0)
     }
 
     private fun navigateWelcomeFragment(){
         SharedPreferenceUtil.setOnboardViewedState(this,true)
+        var intent = Intent(this,MainActivity::class.java)
+        startActivity(intent)
         finish()
-
     }
 }

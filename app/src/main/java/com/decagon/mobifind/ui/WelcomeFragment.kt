@@ -62,8 +62,7 @@ class WelcomeFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("WELCOMEFRAG", "onCreate: ")
-        println("WELCOMEFRAG")
+
 
         activity?.onBackPressedDispatcher?.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -229,7 +228,7 @@ class WelcomeFragment : Fragment() {
                     try {
                         imageUri = data?.data!!
                         photo = Photo(localUri = imageUri.toString())
-                        binding.welcomeTv.showToast("Image Saved")
+                        binding.welcomeTv.showSnackBar("Image Saved")
                         displayPhotoIv.load(imageUri.toString())
                     } catch (e: IOException) {
                         e.printStackTrace()

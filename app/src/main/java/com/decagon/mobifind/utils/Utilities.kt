@@ -32,18 +32,17 @@ import kotlin.collections.ArrayList
 private const val ACCESSIBILITY_ENABLED = 1
 
 fun View.showSnackBar(message: String) {
-    Snackbar.make(this, message, Snackbar.LENGTH_SHORT)
+    Snackbar.make(this, message, Snackbar.LENGTH_SHORT).setTextColor(resources.getColor(R.color.white))
+        .setBackgroundTint(resources.getColor(R.color.dark_blue))
         .show()
 }
 
 fun View.showSnackBar(message: String, color : Int){
     Snackbar.make(this, message, Snackbar.LENGTH_SHORT).setTextColor(color)
+        .setBackgroundTint(resources.getColor(R.color.dark_blue))
         .show()
 }
 
-fun View.showToast(message: String) {
-    Toast.makeText(this.context, message, Toast.LENGTH_SHORT).show()
-}
 
 fun ImageView.load(imageUrl: String) {
     Glide.with(this.context)
@@ -65,6 +64,11 @@ fun initAdapter(adapter: UserAdapter, recyclerView: RecyclerView) {
 fun filterNumber(number: String): String {
     val result = if (number.take(1) == "+") number else number.replaceRange(0..0, "+234")
     return result.filter { it == '+' || it.isDigit() }
+}
+
+fun String.removeEmptySpace():String{
+
+    return  this.filter { it != ' ' }
 }
 
 fun inviteMessage(name: String): String = "Hi $name \nMobiFind helps you to get updated location of you and your love ones, download App by clicking the link below $BASE_URL"

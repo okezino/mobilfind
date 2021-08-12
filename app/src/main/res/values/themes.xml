@@ -1,6 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.Mobifind" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="Theme.Mobifind" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        android:theme="@style/Theme.AppCompat.NoActionBar"
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/tool_bar</item>
         <item name="colorPrimaryVariant">@color/status_bar</item>

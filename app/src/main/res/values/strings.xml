@@ -20,7 +20,7 @@
     <string name="map_image">Profile Image</string>
     <string name="contacts">Contacts</string>
     <string name="contactName">Alhaji Okezi</string>
-    <string name="status">ADD</string>
+    <string name="status">Add</string>
     <string name="phone_number">+234 802 232 0123</string>
     <string name="dialog_tv_hint">Please enter your username</string>
     <string name="dialog_done_btn">Done</string>
@@ -54,7 +54,7 @@
     <string name="trackers_desc">Grant a contact permission to keep track of your position</string>
     <string name="remove_desc">Swipe to delete from your tracker list</string>
     <string name="add_to_trackers_list">Add to trackers list</string>
-    <string name="get_started">Get Started</string>
+    <string name="get_started"><b>Get Started</b></string>
     <string name="background_location_permission_title">Allow mobifind to access this device\'s location even when closed or not in use.</string>
     <string name="background_location_permission_message">This app collects location data to enable people whom you have granted permission to track you, keep track of your current position.</string>
     <string name="yes">Change to \"Allow all the time\"</string>
@@ -109,8 +109,9 @@
     <string name="upContent">We may update or amend the Privacy Policy and updates will be shared according to when due, however the latest update date will also be shared at the “Last modified” date at the top of this Privacy Policy. Please review our Privacy Policy from time to time.</string>
     <string name="cu">Contact Us</string>
     <string name="ng">Nigeria.</string>
-    <string name="okh">Okhurumi Community, Edo State,</string>
-    <string name="ohen">3 ohen Road,</string>
+    <string name="okh">Okhuromi Community, Edo State,</string>
+    <string name="ohen">3 Ohen Road,</string>
     <string name="mo">Mobifind Ltd.</string>
-    <string name="email_mob">mobifin4@gmail.com</string>
+    <string name="email_mob">mobifind4@gmail.com</string>
+
 </resources>

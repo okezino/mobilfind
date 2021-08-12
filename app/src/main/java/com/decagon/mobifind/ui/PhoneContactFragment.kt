@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.decagon.mobifind.R
@@ -104,7 +105,7 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
 
         while (cursor!!.moveToNext()) {
             val name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME))
-            val number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER))
+            val number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).removeEmptySpace()
             contactList.add("$name:$number")
         }
 
@@ -158,12 +159,16 @@ class PhoneContactFragment : Fragment(), OnclickPhoneContact {
         recyclerView = binding.recyclerviewPhoneFragment
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = PhoneContactAdapter(this,contactList.toSet().toList())
+
     }
 
     private fun handleTextChange( contact : List<String>) {
         recyclerView = binding.recyclerviewPhoneFragment
+
         recyclerView.layoutManager = LinearLayoutManager(context)
         recyclerView.adapter = PhoneContactAdapter(this,contact)
+
+
     }
 
     private fun addToTrackerList(name : String, userNumber : String){

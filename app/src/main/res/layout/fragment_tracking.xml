@@ -33,6 +33,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="@color/dark_blue"
         android:text="@string/empty_tracking_list"
         android:visibility="gone"
         android:textSize="22sp"
