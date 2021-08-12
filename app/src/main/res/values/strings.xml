@@ -104,7 +104,7 @@
     <string name="ur">User Rights</string>
     <string name="urContent">You may submit a request to access or delete the information we have collected about you by sending your request to our contact email provided in the Contact section at the bottom of this policy.</string>
     <string name="ch">Children</string>
-    <string name="chContent">This is a general privacy policy and it\'s not limited to a certain age group.</string>
+    <string name="chContent">This is a general privacy policy and it\'s not limited to a certain age group</string>
     <string name="up">Updates To Our Policy</string>
     <string name="upContent">We may update or amend the Privacy Policy and updates will be shared according to when due, however the latest update date will also be shared at the “Last modified” date at the top of this Privacy Policy. Please review our Privacy Policy from time to time.</string>
     <string name="cu">Contact Us</string>
