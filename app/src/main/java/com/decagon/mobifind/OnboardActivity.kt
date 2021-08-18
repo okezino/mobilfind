@@ -20,7 +20,7 @@ class OnboardActivity : AppCompatActivity() {
         val viewPager = findViewById<ViewPager2>(R.id.myViewPager)
         val tabDots = findViewById<TabLayout>(R.id.tabDots)
         val onboardItems = listOf(Onboard(getString(R.string.tracking),getString(R.string.tracking_desc),R.drawable.tracking),
-        Onboard(getString(R.string.trackers),getString(R.string.trackers_desc),R.drawable.tracker),Onboard(getString(R.string.remove),getString(R.string.remove_desc),R.drawable.delete))
+        Onboard(getString(R.string.trackers),getString(R.string.trackers_desc),R.drawable.trackers),Onboard(getString(R.string.remove),getString(R.string.remove_desc),R.drawable.delete))
 
       viewPager.apply {
             // Configures the adapter of the viewpager to the ViewPagerAdapter class created
