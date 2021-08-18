@@ -336,12 +336,12 @@
                 android:weightSum="2"
                 android:orientation="horizontal">
                             <TextView
-                                android:id="@+id/privacy_activity_agree"
+                                android:id="@+id/privacy_activity_disagree"
                                 android:layout_width="wrap_content"
                                 android:gravity="center"
                                 android:layout_weight="1"
                                 android:layout_height="wrap_content"
-                                android:text="@string/agree"
+                                android:text="@string/disagree"
                                 android:background="@drawable/bgbtnwhite"
                                 android:textSize="15sp"
                                 android:padding="10dp"
@@ -349,7 +349,7 @@
                               />
 
                             <TextView
-                                android:id="@+id/privacy_activity_disagree"
+                                android:id="@+id/privacy_activity_agree"
                                 android:layout_width="wrap_content"
                                 android:layout_weight="1"
                                 android:textColor="@color/white"
@@ -357,7 +357,7 @@
                                 android:padding="10dp"
                                 android:background="@drawable/bgbtnblack"
                                 android:layout_height="wrap_content"
-                                android:text="@string/disagree"
+                                android:text="@string/agree"
                                 android:textSize="15sp"
                                 android:layout_margin="20dp"
                             />

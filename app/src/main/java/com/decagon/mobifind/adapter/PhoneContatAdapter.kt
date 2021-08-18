@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.recyclerview.widget.RecyclerView
 import com.decagon.mobifind.R
 
@@ -19,6 +20,7 @@ class PhoneContactAdapter(
         var statusView: TextView = itemView.findViewById(R.id.phone_contact_status)
         var nameView: TextView = itemView.findViewById(R.id.phone_contact_name)
         var phoneNumberView: TextView = itemView.findViewById(R.id.phone_contact_number)
+        var layoutId : View = itemView.findViewById(R.id.phone_recyclerView_adapter)
 
     }
 
@@ -34,6 +36,9 @@ class PhoneContactAdapter(
         holder.nameView.text = name
         holder.phoneNumberView.text = number
         holder.statusView.setOnClickListener {
+            onStatusClicked.onClickStatus(name, number)
+        }
+        holder.layoutId.setOnClickListener {
             onStatusClicked.onClickStatus(name, number)
         }
 

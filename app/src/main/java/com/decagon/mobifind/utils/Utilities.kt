@@ -77,7 +77,7 @@ fun affirmationMessage(name:String) : String ="Are you sure you want to add $nam
 
 fun logoutMessage():String = "Are you sure you want to Logout?"
 
-fun exitMessage(): String = "Are you sure you what to exit the app"
+fun exitMessage(): String = "This action will exit the application, Click YES to exit and NO to continue"
 
 fun denyMessage():String = "Manually give Mobifind permission to your Contact, to enable you add Trackers to your list"
 
